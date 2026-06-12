@@ -365,8 +365,6 @@
   </div>
 </div>
 
-<div style="background:#ff5722;color:white;text-align:center;padding:10px;font-size:16px;font-weight:bold;letter-spacing:1px;">★ DEBUG v2.0 — 2026-06-12 ★ このバナーが見えたら最新版です</div>
-<div style="background:#fff3cd;padding:12px 16px;text-align:center;font-size:13px;"><strong>⚠️ Safariで開いていますか？</strong><br>Slackのアプリ内ブラウザではJSが動きません。<br>Slack → ファイルを長押し → 「ファイルに保存」→ ファイルアプリ → タップ → Safariで開く<br><button id="jstestbtn" onclick="document.getElementById('jstestbtn').textContent='✅ Safari OK！JS動いてます';document.getElementById('jstestbtn').style.background='#2e7d32';" style="margin-top:8px;background:#1a6fb5;color:white;padding:8px 20px;border:none;border-radius:5px;font-size:14px;cursor:pointer;">🔵 JSテスト（Safari確認）</button></div><button id="jstestbtn" onclick="document.getElementById('jstestbtn').textContent='✅ JS動いた！';document.getElementById('jstestbtn').style.background='#2e7d32';document.getElementById('jsresult').textContent='JSは正常に動いています';" style="background:#1a6fb5;color:white;padding:8px 20px;border:none;border-radius:5px;font-size:14px;cursor:pointer;">🔵 JSテスト（タップ）</button><span id="jsresult" style="margin-left:12px;font-size:14px;color:#333;"></span></div>
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('daily', this)">📋 日次点検 / Daily Inspection</button>
   <button class="tab-btn" onclick="switchTab('weekly', this)">📊 週次報告 / Weekly Report</button>
@@ -444,7 +442,7 @@
               <label class="status-btn status-na"><input type="radio" name="st-exit" value="N/A"><span class="status-label na-label">N/A</span></label>
             </div></td>
             <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-exit" accept="image/*" class="photo-file-input" onchange="if(this.files&&this.files[0]){this.classList.add('photo-done');var _id='exit',_r=new FileReader();_r.onload=function(ev){var _d=ev.target.result;photoStore[_id]=_d;var _pc=document.getElementById('pc-'+_id);if(_pc){var _i=document.createElement('img');_i.src=_d;_i.style.cssText='display:block;width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #2e7d32';while(_pc.firstChild)_pc.removeChild(_pc.firstChild);_pc.appendChild(_i);}var _t=document.getElementById('pth-'+_id);if(_t){_t.src=_d;_t.style.display='block';}showToast('写真を記録しました');setTimeout(function(){var pp=document.getElementById('photo-page');if(pp)pp.scrollIntoView({behavior:'smooth',block:'start'});},800);};_r.readAsDataURL(this.files[0]);}">
+            <td><div class="photo-area"><input type="file" id="fi-exit" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
 <img id="pth-exit" class="photo-thumb" src="" alt="撮影済み"></div></td>
           </tr>
           <!-- 2 -->
