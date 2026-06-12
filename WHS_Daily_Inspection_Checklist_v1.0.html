@@ -940,12 +940,6 @@ window._photoHandler = function(inp) {
     if (ttl) ttl.innerHTML = '📷 写真記録 <span>Photo Evidence (' + n + '件)</span>';
 
     showToast('📸 写真を記録しました');
-
-    // 写真記録セクションへスクロール
-    setTimeout(function() {
-      var pp = document.getElementById('photo-page');
-      if (pp) pp.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 800);
   };
   reader.onerror = function() { showToast('⚠️ 読み込みエラー'); };
   reader.readAsDataURL(file);
