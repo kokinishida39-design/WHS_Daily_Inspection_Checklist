@@ -1039,9 +1039,7 @@ function switchTab(tab, btn) {
   btn.classList.add('active');
 }
 function printPage() {
-  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-    alert('📄 PDF保存手順:\n① 画面下部の共有ボタン（□↑）をタップ\n② 「プリント」を選択\n③ プレビューを2本指で広げる\n④ 右上の共有ボタン → 「ファイルに保存」');
-  } else { window.print(); }
+  window.print();
 }
 function showToast(msg) {
   var t = document.getElementById('toast');
