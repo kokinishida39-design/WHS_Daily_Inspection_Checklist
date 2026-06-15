@@ -620,6 +620,7 @@
     <div class="btn-row">
       <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
       <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
+      <button class="btn btn-secondary" onclick="saveDailyComplete()" style="background:#2e7d32;color:white;border-color:#2e7d32;">✅ 日次完了・保存</button>
       <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
     </div>
   </div>
@@ -769,6 +770,8 @@
     <div class="btn-row">
       <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
       <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
+      <button class="btn btn-secondary" onclick="aggregateWeekly()" style="background:#1565c0;color:white;border-color:#1565c0;">📊 日次から集計</button>
+      <button class="btn btn-secondary" onclick="saveWeeklyComplete()" style="background:#2e7d32;color:white;border-color:#2e7d32;">✅ 週次完了・保存</button>
       <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
     </div>
   </div>
@@ -889,6 +892,7 @@
     <div class="btn-row">
       <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
       <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
+      <button class="btn btn-secondary" onclick="aggregateMonthly()" style="background:#1565c0;color:white;border-color:#1565c0;">📊 週次から集計</button>
       <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
     </div>
   </div>
@@ -1129,6 +1133,237 @@ function setDefaults() {
   set('w-from',fmt(mon)); set('w-to',fmt(fri));
 }
 
+
+// ===== NG自動反映 — チェックリストのNG選択で指摘事項に自動追加 =====
+var checklistItems = {
+  'st-exit':      '避難経路・非常口',
+  'st-fire':      '消火設備（消火器・スプリンクラー）',
+  'st-firstaid':  '救急用品（AED・救急箱）',
+  'st-walkway':   '歩行帯を妨げる障害物',
+  'st-workarea':  '作業エリアの異常',
+  'st-fivs':      '整理整頓・清潔（5S）',
+  'st-signage':   '安全標識・掲示物',
+  'st-ppe':       'PPE着用状況',
+  'st-loto':      'ロックアウト・タグアウト（LOTO）',
+  'st-emergency': '緊急連絡体制・掲示'
+};
+
+function onNgChange(radioName, value) {
+  var itemName = checklistItems[radioName];
+  if (!itemName) return;
+  var tbody = document.getElementById('findings-body');
+  if (!tbody) return;
+  var existing = tbody.querySelector('tr[data-ng-key="' + radioName + '"]');
+
+  if (value === 'NG') {
+    if (existing) return; // 既にある場合はスキップ
+    findingCount++;
+    var n = findingCount;
+    var tr = document.createElement('tr');
+    tr.setAttribute('data-ng-key', radioName);
+    tr.innerHTML =
+      '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + n + '</td>' +
+      '<td><input type="text" placeholder="場所 / Location" value="' + itemName + '"></td>' +
+      '<td style="background:#fff8f8;vertical-align:top">' +
+        '<input type="text" class="remark-input" placeholder="BAD：問題の内容" value="' + itemName + '">' +
+        '<div class="photo-area" style="margin-top:8px">' +
+          '<input type="file" id="fi-fbad' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
+        '</div>' +
+      '</td>' +
+      '<td style="background:#f6fff6;vertical-align:top">' +
+        '<input type="text" class="remark-input" placeholder="GOOD：是正後の状況">' +
+        '<div class="photo-area" style="margin-top:8px">' +
+          '<input type="file" id="fi-fgood' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
+        '</div>' +
+      '</td>' +
+      '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
+      '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit">' +
+        '<option>対応中 / In Progress</option><option>完了 / Closed</option>' +
+      '</select></td>';
+    tbody.appendChild(tr);
+    addFindingPhotoRow(n);
+    showToast('⚠️ 指摘事項に自動追加しました');
+  } else {
+    // OK/N/A に戻した場合 — GOOD欄が空なら自動削除
+    if (existing) {
+      var goodInput = existing.querySelectorAll('td')[3].querySelector('input[type="text"]');
+      var statusSel = existing.querySelector('select');
+      var isEmpty = !goodInput || !goodInput.value.trim();
+      var isOpen  = !statusSel || statusSel.value === '対応中 / In Progress';
+      if (isEmpty && isOpen) {
+        existing.parentNode.removeChild(existing);
+        showToast('指摘行を削除しました');
+      }
+    }
+  }
+}
+
+
+// ===== 日次完了保存 / 週次・月次自動集計 =====
+
+function saveDailyComplete() {
+  var today = new Date();
+  var pad = function(n) { return String(n).padStart(2,'0'); };
+  var dateStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  var key = 'whs-daily-' + dateStr;
+
+  // NG件数カウント
+  var ngCount = 0;
+  document.querySelectorAll('input[type="radio"][name^="st-"]:checked').forEach(function(r) {
+    if (r.value === 'NG') ngCount++;
+  });
+
+  // 指摘件数・完了件数
+  var findingTotal = 0, findingClosed = 0;
+  document.querySelectorAll('#findings-body tr').forEach(function(tr) {
+    findingTotal++;
+    var sel = tr.querySelector('select');
+    if (sel && sel.value.indexOf('完了') >= 0) findingClosed++;
+  });
+
+  // インシデント・ヒヤリハット
+  var incidentCount = 0, nearMissCount = 0;
+  document.querySelectorAll('#incident-body tr').forEach(function(tr) {
+    var sel = tr.querySelector('select');
+    if (!sel) return;
+    if (sel.value.indexOf('ヒヤリハット') >= 0) nearMissCount++;
+    else incidentCount++;
+  });
+
+  var data = {
+    date: dateStr,
+    ngCount: ngCount,
+    findingTotal: findingTotal,
+    findingClosed: findingClosed,
+    incidentCount: incidentCount,
+    nearMissCount: nearMissCount
+  };
+
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    // 5週間以上前のデータを自動削除
+    var cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 35);
+    Object.keys(localStorage).forEach(function(k) {
+      if (k.startsWith('whs-daily-')) {
+        var d = new Date(k.replace('whs-daily-',''));
+        if (d < cutoff) localStorage.removeItem(k);
+      }
+    });
+    autoSave();
+    showToast('✅ 日次点検を保存しました（' + dateStr + '）');
+  } catch(e) { showToast('⚠️ 保存エラー'); }
+}
+
+function aggregateWeekly() {
+  var today = new Date();
+  var dow = today.getDay();
+  var mon = new Date(today);
+  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  var pad = function(n) { return String(n).padStart(2,'0'); };
+  var fmt = function(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); };
+
+  var days=0, findings=0, closed=0, incidents=0, nearMisses=0;
+  for (var i = 0; i < 5; i++) {
+    var d = new Date(mon); d.setDate(mon.getDate() + i);
+    if (d > today) break;
+    var raw = localStorage.getItem('whs-daily-' + fmt(d));
+    if (!raw) continue;
+    try {
+      var data = JSON.parse(raw);
+      days++;
+      findings  += data.findingTotal  || 0;
+      closed    += data.findingClosed || 0;
+      incidents += data.incidentCount || 0;
+      nearMisses+= data.nearMissCount || 0;
+    } catch(e) {}
+  }
+
+  if (days === 0) { showToast('⚠️ 今週の日次データがまだありません'); return; }
+
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
+  set('w-kpi1', days);
+  set('w-kpi2', findings);
+  set('w-kpi3', closed);
+  set('w-kpi4', incidents);
+  set('w-kpi5', nearMisses);
+  autoSave();
+  showToast('📊 ' + days + '日分を集計しました（月〜' + ['日','月','火','水','木','金','土'][today.getDay()] + '）');
+}
+
+function saveWeeklyComplete() {
+  var today = new Date();
+  var dow = today.getDay();
+  var mon = new Date(today);
+  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  var pad = function(n) { return String(n).padStart(2,'0'); };
+  var weekKey = 'whs-weekly-' + mon.getFullYear()+'-'+pad(mon.getMonth()+1)+'-'+pad(mon.getDate());
+
+  var getVal = function(id){ var el=document.getElementById(id); return el ? parseFloat(el.value)||0 : 0; };
+  var data = {
+    weekStart: mon.getFullYear()+'-'+pad(mon.getMonth()+1)+'-'+pad(mon.getDate()),
+    kpi1: getVal('w-kpi1'), kpi2: getVal('w-kpi2'), kpi3: getVal('w-kpi3'),
+    kpi4: getVal('w-kpi4'), kpi5: getVal('w-kpi5'), kpi6: getVal('w-kpi6')
+  };
+
+  try {
+    localStorage.setItem(weekKey, JSON.stringify(data));
+    // 3ヶ月以上前のデータを自動削除
+    var cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 90);
+    Object.keys(localStorage).forEach(function(k) {
+      if (k.startsWith('whs-weekly-')) {
+        var d = new Date(k.replace('whs-weekly-',''));
+        if (d < cutoff) localStorage.removeItem(k);
+      }
+    });
+    autoSave();
+    showToast('✅ 週次報告を保存しました（' + data.weekStart + '）');
+  } catch(e) { showToast('⚠️ 保存エラー'); }
+}
+
+function aggregateMonthly() {
+  var today = new Date();
+  var year = today.getFullYear(), month = today.getMonth();
+
+  var weeks=0, findings=0, closed=0, incidents=0, nearMisses=0, training=0, days=0;
+  Object.keys(localStorage).sort().forEach(function(k) {
+    if (!k.startsWith('whs-weekly-')) return;
+    try {
+      var data = JSON.parse(localStorage.getItem(k));
+      var d = new Date(data.weekStart);
+      if (d.getFullYear() !== year || d.getMonth() !== month) return;
+      weeks++;
+      days      += data.kpi1 || 0;
+      findings  += data.kpi2 || 0;
+      closed    += data.kpi3 || 0;
+      incidents += data.kpi4 || 0;
+      nearMisses+= data.kpi5 || 0;
+      training  += data.kpi6 || 0;
+    } catch(e) {}
+  });
+
+  if (weeks === 0) { showToast('⚠️ 今月の週次データがまだありません'); return; }
+
+  // 今月の稼働日数（月〜金のみカウント）
+  var workDays = 0;
+  var d = new Date(year, month, 1);
+  while (d.getMonth() === month) {
+    var dw = d.getDay();
+    if (dw >= 1 && dw <= 5) workDays++;
+    d.setDate(d.getDate() + 1);
+  }
+  var compRate = workDays > 0 ? Math.min(Math.round(days / workDays * 100), 100) : 0;
+  var closeRate = findings > 0 ? Math.round(closed / findings * 100) : 0;
+
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
+  set('m-kpi1', compRate);
+  set('m-kpi2', findings);
+  set('m-kpi3', closeRate);
+  set('m-kpi5', incidents);
+  set('m-kpi6', nearMisses);
+  autoSave();
+  showToast('📊 ' + weeks + '週分を集計しました');
+}
+
 // ===== INIT =====
 var restored = autoRestore();
 if (!restored) {
@@ -1139,6 +1374,11 @@ if (!restored) {
 }
 var debouncedSave = debounce(autoSave, 800);
 document.addEventListener('input',  debouncedSave);
+
+// NGラジオボタンの変更を検知
+document.querySelectorAll('input[type="radio"][name^="st-"]').forEach(function(radio) {
+  radio.addEventListener('change', function() { onNgChange(this.name, this.value); });
+});
 document.addEventListener('change', debouncedSave);
 document.querySelectorAll('.data-table').forEach(function(t) {
   var w = document.createElement('div'); w.className='table-scroll';
