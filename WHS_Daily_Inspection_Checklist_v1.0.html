@@ -944,6 +944,27 @@ window._photoHandler = function(inp) {
     if (ttl) ttl.innerHTML = '📷 写真記録 <span>Photo Evidence (' + n + '件)</span>';
 
     showToast('📸 写真を記録しました');
+
+    // チェックリスト項目の写真なら、NG指摘行のBADにも反映
+    if (/^[a-z]+$/.test(id)) { // fi-exit → exit など（finding番号ではなく項目キー）
+      var ngRow = document.querySelector('tr[data-ng-key="st-' + id + '"]');
+      if (ngRow) {
+        var badTd = ngRow.querySelectorAll('td')[2];
+        if (badTd) {
+          var existNgImg = badTd.querySelector('img[data-ng-photo]');
+          if (existNgImg) {
+            existNgImg.src = dataUrl;
+          } else {
+            var ngImg = document.createElement('img');
+            ngImg.src = dataUrl;
+            ngImg.setAttribute('data-ng-photo','1');
+            ngImg.style.cssText = 'display:block;width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+            var photoAreaEl = badTd.querySelector('.photo-area');
+            if (photoAreaEl) badTd.insertBefore(ngImg, photoAreaEl);
+          }
+        }
+      }
+    }
   };
   reader.onerror = function() { showToast('⚠️ 読み込みエラー'); };
   reader.readAsDataURL(file);
@@ -1156,39 +1177,90 @@ function onNgChange(radioName, value) {
   var existing = tbody.querySelector('tr[data-ng-key="' + radioName + '"]');
 
   if (value === 'NG') {
-    if (existing) return; // 既にある場合はスキップ
+    if (existing) return;
+
+    // チェックリスト行から備考テキストを取得
+    var radioEl = document.querySelector('input[type="radio"][name="' + radioName + '"][value="NG"]');
+    var remark = '';
+    if (radioEl) {
+      var checkRow = radioEl.closest('tr');
+      if (checkRow) {
+        var remarkEl = checkRow.querySelector('.remark-input');
+        if (remarkEl) remark = remarkEl.value.trim();
+      }
+    }
+
+    // チェックリスト写真を取得
+    var photoKey = radioName.replace('st-', '');
+    var photoData = photoStore[photoKey] || null;
+
+    var badText = itemName + (remark ? '：' + remark : '');
+
     findingCount++;
     var n = findingCount;
-    var tr = document.createElement('tr');
-    tr.setAttribute('data-ng-key', radioName);
-    tr.innerHTML =
+    var newTr = document.createElement('tr');
+    newTr.setAttribute('data-ng-key', radioName);
+
+    // BAD列: テキスト入力 + 既存写真（あれば）+ 新規写真アップロード
+    var badTd = document.createElement('td');
+    badTd.style.cssText = 'background:#fff8f8;vertical-align:top';
+    var badInput = document.createElement('input');
+    badInput.type = 'text'; badInput.className = 'remark-input';
+    badInput.placeholder = 'BAD：問題の内容'; badInput.value = badText;
+    badTd.appendChild(badInput);
+    // チェックリスト写真があれば表示
+    if (photoData) {
+      var badImg = document.createElement('img');
+      badImg.src = photoData;
+      badImg.setAttribute('data-ng-photo','1');
+      badImg.style.cssText = 'display:block;width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+      badTd.appendChild(badImg);
+    }
+    var badPhotoArea = document.createElement('div');
+    badPhotoArea.className = 'photo-area'; badPhotoArea.style.marginTop = '6px';
+    var badFileInput = document.createElement('input');
+    badFileInput.type = 'file'; badFileInput.id = 'fi-fbad' + n;
+    badFileInput.accept = 'image/*'; badFileInput.className = 'photo-file-input';
+    badFileInput.setAttribute('onchange','window._photoHandler(this)');
+    badPhotoArea.appendChild(badFileInput);
+    badTd.appendChild(badPhotoArea);
+
+    // GOOD列: テキスト入力 + 写真アップロード
+    var goodTd = document.createElement('td');
+    goodTd.style.cssText = 'background:#f6fff6;vertical-align:top';
+    var goodInput = document.createElement('input');
+    goodInput.type = 'text'; goodInput.className = 'remark-input';
+    goodInput.placeholder = 'GOOD：是正後の状況';
+    goodTd.appendChild(goodInput);
+    var goodPhotoArea = document.createElement('div');
+    goodPhotoArea.className = 'photo-area'; goodPhotoArea.style.marginTop = '6px';
+    var goodFileInput = document.createElement('input');
+    goodFileInput.type = 'file'; goodFileInput.id = 'fi-fgood' + n;
+    goodFileInput.accept = 'image/*'; goodFileInput.className = 'photo-file-input';
+    goodFileInput.setAttribute('onchange','window._photoHandler(this)');
+    goodPhotoArea.appendChild(goodFileInput);
+    goodTd.appendChild(goodPhotoArea);
+
+    // 行を組み立て
+    newTr.innerHTML =
       '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + n + '</td>' +
-      '<td><input type="text" placeholder="場所 / Location" value="' + itemName + '"></td>' +
-      '<td style="background:#fff8f8;vertical-align:top">' +
-        '<input type="text" class="remark-input" placeholder="BAD：問題の内容" value="' + itemName + '">' +
-        '<div class="photo-area" style="margin-top:8px">' +
-          '<input type="file" id="fi-fbad' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
-        '</div>' +
-      '</td>' +
-      '<td style="background:#f6fff6;vertical-align:top">' +
-        '<input type="text" class="remark-input" placeholder="GOOD：是正後の状況">' +
-        '<div class="photo-area" style="margin-top:8px">' +
-          '<input type="file" id="fi-fgood' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
-        '</div>' +
-      '</td>' +
+      '<td><input type="text" placeholder="場所 / Location" value="' + itemName + '"></td>';
+    newTr.appendChild(badTd);
+    newTr.appendChild(goodTd);
+    newTr.innerHTML +=
       '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
       '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit">' +
         '<option>対応中 / In Progress</option><option>完了 / Closed</option>' +
       '</select></td>';
-    tbody.appendChild(tr);
+    tbody.appendChild(newTr);
     addFindingPhotoRow(n);
     showToast('⚠️ 指摘事項に自動追加しました');
+
   } else {
-    // OK/N/A に戻した場合 — GOOD欄が空なら自動削除
     if (existing) {
-      var goodInput = existing.querySelectorAll('td')[3].querySelector('input[type="text"]');
+      var gInput = existing.querySelectorAll('td')[3] && existing.querySelectorAll('td')[3].querySelector('input[type="text"]');
       var statusSel = existing.querySelector('select');
-      var isEmpty = !goodInput || !goodInput.value.trim();
+      var isEmpty = !gInput || !gInput.value.trim();
       var isOpen  = !statusSel || statusSel.value === '対応中 / In Progress';
       if (isEmpty && isOpen) {
         existing.parentNode.removeChild(existing);
@@ -1367,7 +1439,6 @@ function aggregateMonthly() {
 // ===== INIT =====
 var restored = autoRestore();
 if (!restored) {
-  addRow('findings-body',   findingRowTemplate);
   addRow('incident-body',   incidentRowTemplate);
   addRow('escalation-body', escalationRowTemplate);
   setDefaults();
