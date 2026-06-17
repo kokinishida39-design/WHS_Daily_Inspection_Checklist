@@ -380,12 +380,11 @@
       <div class="section-title">基本情報 <span>Basic Information</span></div>
       <div class="form-row">
         <div class="form-group">
-          <label>点検日 <span class="en">Inspection Date</span></label>
-          <input type="date" id="d-date">
-        </div>
-        <div class="form-group">
-          <label>点検時間 <span class="en">Time</span></label>
-          <input type="time" id="d-time">
+          <label>点検日時 <span class="en">Date &amp; Time</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="d-date" style="flex:1">
+            <input type="time" id="d-time" style="flex:0 0 auto">
+          </div>
         </div>
         <div class="form-group">
           <label>天候 <span class="en">Weather</span></label>
@@ -943,6 +942,44 @@ window._photoHandler = function(inp) {
     if (ttl) ttl.innerHTML = '📷 写真記録 <span>Photo Evidence (' + n + '件)</span>';
 
     showToast('📸 写真を記録しました');
+
+    // GOOD写真（fi-fgood{n}）の表示
+    if (/^fgood\d+$/.test(id)) {
+      var goodTd = inp.closest('td');
+      if (goodTd) {
+        var existGoodImg = goodTd.querySelector('img[data-good-photo]');
+        if (existGoodImg) {
+          existGoodImg.src = dataUrl;
+        } else {
+          var goodImg = document.createElement('img');
+          goodImg.src = dataUrl;
+          goodImg.setAttribute('data-good-photo','1');
+          goodImg.style.cssText = 'display:block;width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px 0';
+          var goodPhotoAreaEl = goodTd.querySelector('.photo-area');
+          if (goodPhotoAreaEl) goodTd.insertBefore(goodImg, goodPhotoAreaEl);
+          else goodTd.appendChild(goodImg);
+        }
+      }
+    }
+
+    // BAD写真（手動追加 fi-fbad{n}）の表示
+    if (/^fbad\d+$/.test(id)) {
+      var badTdEl = inp.closest('td');
+      if (badTdEl) {
+        var existBadImg = badTdEl.querySelector('img[data-bad-photo]');
+        if (existBadImg) {
+          existBadImg.src = dataUrl;
+        } else {
+          var badImgEl = document.createElement('img');
+          badImgEl.src = dataUrl;
+          badImgEl.setAttribute('data-bad-photo','1');
+          badImgEl.style.cssText = 'display:block;width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+          var badPhotoAreaEl2 = badTdEl.querySelector('.photo-area');
+          if (badPhotoAreaEl2) badTdEl.insertBefore(badImgEl, badPhotoAreaEl2);
+          else badTdEl.appendChild(badImgEl);
+        }
+      }
+    }
 
     // チェックリスト項目の写真なら、NG指摘行のBADにも反映
     if (/^[a-z]+$/.test(id)) { // fi-exit → exit など（finding番号ではなく項目キー）
