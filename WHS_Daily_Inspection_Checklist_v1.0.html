@@ -348,16 +348,24 @@
       img[data-ng-photo],
       img[data-good-photo],
       img[data-bad-photo] {
+        display: block !important;
         max-width: 200px !important;
         max-height: 150px !important;
         width: auto !important;
         height: auto !important;
+        margin: 6px auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .pci, .pci.loaded {
+        display: block !important;
         max-width: 240px !important;
         max-height: 180px !important;
         width: auto !important;
         height: auto !important;
+        margin: 4px auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .photo-item { width: 50% !important; }
     }
@@ -957,7 +965,7 @@ window._photoHandler = function(inp) {
           var goodImg = document.createElement('img');
           goodImg.src = dataUrl;
           goodImg.setAttribute('data-good-photo','1');
-          goodImg.style.cssText = 'display:block;width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px 0';
+          goodImg.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px auto';
           var goodPhotoAreaEl = goodTd.querySelector('.photo-area');
           if (goodPhotoAreaEl) goodTd.insertBefore(goodImg, goodPhotoAreaEl);
           else goodTd.appendChild(goodImg);
@@ -976,7 +984,7 @@ window._photoHandler = function(inp) {
           var badImgEl = document.createElement('img');
           badImgEl.src = dataUrl;
           badImgEl.setAttribute('data-bad-photo','1');
-          badImgEl.style.cssText = 'display:block;width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+          badImgEl.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
           var badPhotoAreaEl2 = badTdEl.querySelector('.photo-area');
           if (badPhotoAreaEl2) badTdEl.insertBefore(badImgEl, badPhotoAreaEl2);
           else badTdEl.appendChild(badImgEl);
@@ -997,7 +1005,7 @@ window._photoHandler = function(inp) {
             var ngImg = document.createElement('img');
             ngImg.src = dataUrl;
             ngImg.setAttribute('data-ng-photo','1');
-            ngImg.style.cssText = 'display:block;width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+            ngImg.style.cssText = 'display:block;max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
             var photoAreaEl = badTd.querySelector('.photo-area');
             if (photoAreaEl) badTd.insertBefore(ngImg, photoAreaEl);
           }
@@ -1226,7 +1234,7 @@ function onNgChange(radioName, value) {
       var badImg = document.createElement('img');
       badImg.src = photoData;
       badImg.setAttribute('data-ng-photo','1');
-      badImg.style.cssText = 'display:block;width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+      badImg.style.cssText = 'display:block;max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
       badTd.appendChild(badImg);
     }
     var badPhotoArea = document.createElement('div');
