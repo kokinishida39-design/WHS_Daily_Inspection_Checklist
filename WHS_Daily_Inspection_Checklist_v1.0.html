@@ -131,7 +131,7 @@
     }
     /* Photo page: 1 row = 2 cells side-by-side */
     .photo-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
     }
     .photo-item {
       border: 1px solid var(--border); border-radius: 6px;
@@ -343,17 +343,30 @@
       /* 写真記録セルの動的img（.pciを置換したもの）も確実に印刷 */
       .photo-cell img {
         display: block !important;
-        max-width: 240px !important;
-        max-height: 180px !important;
-        width: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 140px !important;
         height: auto !important;
+        object-fit: contain !important;
         margin: 4px auto !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
       .photo-empty-msg { display: none !important; }
-      .photo-grid, .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .photo-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .photo-item { break-inside: avoid; page-break-inside: avoid; }
+      /* 6枚目の後にページブレーク（1P:6枚, 2P:3枚） */
+      #photo-grid-checklist .photo-item:nth-child(6) {
+        page-break-after: always;
+        break-after: always;
+      }
       .photo-has-image { border-color: #2e7d32 !important; background: #f1f8f1 !important; }
 
       /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
@@ -382,7 +395,6 @@
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      .photo-item { width: 50% !important; }
     }
   
     .photo-thumb {
