@@ -347,7 +347,8 @@
       /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
       img[data-ng-photo],
       img[data-good-photo],
-      img[data-bad-photo] {
+      img[data-bad-photo],
+      .finding-photo {
         display: block !important;
         max-width: 200px !important;
         max-height: 150px !important;
@@ -357,6 +358,8 @@
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
+      /* finding-photo: 非表示スロットはプリントでも非表示 */
+      .finding-photo[style*='display:none'] { display: none !important; }
       .pci, .pci.loaded {
         display: block !important;
         max-width: 240px !important;
@@ -961,6 +964,7 @@ window._photoHandler = function(inp) {
         var existGoodImg = goodTd.querySelector('img[data-good-photo]');
         if (existGoodImg) {
           existGoodImg.src = dataUrl;
+          existGoodImg.style.display = 'block';
         } else {
           var goodImg = document.createElement('img');
           goodImg.src = dataUrl;
@@ -980,6 +984,7 @@ window._photoHandler = function(inp) {
         var existBadImg = badTdEl.querySelector('img[data-bad-photo]');
         if (existBadImg) {
           existBadImg.src = dataUrl;
+          existBadImg.style.display = 'block';
         } else {
           var badImgEl = document.createElement('img');
           badImgEl.src = dataUrl;
@@ -1001,6 +1006,7 @@ window._photoHandler = function(inp) {
           var existNgImg = badTd.querySelector('img[data-ng-photo]');
           if (existNgImg) {
             existNgImg.src = dataUrl;
+            existNgImg.style.display = 'block';
           } else {
             var ngImg = document.createElement('img');
             ngImg.src = dataUrl;
@@ -1031,12 +1037,14 @@ function findingRowTemplate() {
     '<td><input type="text" placeholder="場所 / Location"></td>' +
     '<td style="background:#fff8f8;vertical-align:top">' +
       '<input type="text" class="remark-input" placeholder="BAD：問題の内容">' +
+      '<img id="img-fbad' + n + '" class="finding-photo" data-bad-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto" alt="">' +
       '<div class="photo-area" style="margin-top:8px">' +
         '<input type="file" id="fi-fbad' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
       '</div>' +
     '</td>' +
     '<td style="background:#f6fff6;vertical-align:top">' +
       '<input type="text" class="remark-input" placeholder="GOOD：是正後の状況">' +
+      '<img id="img-fgood' + n + '" class="finding-photo" data-good-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto" alt="">' +
       '<div class="photo-area" style="margin-top:8px">' +
         '<input type="file" id="fi-fgood' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
       '</div>' +
@@ -1229,14 +1237,23 @@ function onNgChange(radioName, value) {
     badInput.type = 'text'; badInput.className = 'remark-input';
     badInput.placeholder = 'BAD：問題の内容'; badInput.value = badText;
     badTd.appendChild(badInput);
-    // チェックリスト写真があれば表示
-    if (photoData) {
-      var badImg = document.createElement('img');
-      badImg.src = photoData;
-      badImg.setAttribute('data-ng-photo','1');
-      badImg.style.cssText = 'display:block;max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
-      badTd.appendChild(badImg);
-    }
+    // チェックリスト写真プレースホルダー（常に作成、写真あれば表示）
+    var badImgSlot = document.createElement('img');
+    badImgSlot.className = 'finding-photo';
+    badImgSlot.setAttribute('data-ng-photo','1');
+    badImgSlot.style.cssText = 'max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
+    badImgSlot.alt = '';
+    if (photoData) { badImgSlot.src = photoData; badImgSlot.style.display = 'block'; }
+    else { badImgSlot.style.display = 'none'; }
+    badTd.appendChild(badImgSlot);
+    // 手動BAD写真プレースホルダー
+    var badManualSlot = document.createElement('img');
+    badManualSlot.id = 'img-fbad' + n;
+    badManualSlot.className = 'finding-photo';
+    badManualSlot.setAttribute('data-bad-photo','1');
+    badManualSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
+    badManualSlot.alt = '';
+    badTd.appendChild(badManualSlot);
     var badPhotoArea = document.createElement('div');
     badPhotoArea.className = 'photo-area'; badPhotoArea.style.marginTop = '6px';
     var badFileInput = document.createElement('input');
@@ -1253,6 +1270,14 @@ function onNgChange(radioName, value) {
     goodInput.type = 'text'; goodInput.className = 'remark-input';
     goodInput.placeholder = 'GOOD：是正後の状況';
     goodTd.appendChild(goodInput);
+    // GOOD写真プレースホルダー（非表示で先に作成）
+    var goodImgSlot = document.createElement('img');
+    goodImgSlot.id = 'img-fgood' + n;
+    goodImgSlot.className = 'finding-photo';
+    goodImgSlot.setAttribute('data-good-photo','1');
+    goodImgSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto';
+    goodImgSlot.alt = '';
+    goodTd.appendChild(goodImgSlot);
     var goodPhotoArea = document.createElement('div');
     goodPhotoArea.className = 'photo-area'; goodPhotoArea.style.marginTop = '6px';
     var goodFileInput = document.createElement('input');
@@ -1262,17 +1287,31 @@ function onNgChange(radioName, value) {
     goodPhotoArea.appendChild(goodFileInput);
     goodTd.appendChild(goodPhotoArea);
 
-    // 行を組み立て
-    newTr.innerHTML =
-      '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + n + '</td>' +
-      '<td><input type="text" placeholder="場所 / Location" value="' + itemName + '"></td>';
+    // 行を組み立て（innerHTML+=を使わずcreateElementで統一）
+    var numTd = document.createElement('td');
+    numTd.style.cssText = 'text-align:center;color:#bbb;font-size:12px;width:28px';
+    numTd.textContent = n;
+    var locTd = document.createElement('td');
+    var locInput = document.createElement('input');
+    locInput.type = 'text'; locInput.placeholder = '場所 / Location'; locInput.value = itemName;
+    locTd.appendChild(locInput);
+    var assigneeTd = document.createElement('td');
+    var assigneeInput = document.createElement('input');
+    assigneeInput.type = 'text'; assigneeInput.placeholder = '担当者 / Assignee';
+    assigneeTd.appendChild(assigneeInput);
+    var statusTd = document.createElement('td');
+    var statusSel = document.createElement('select');
+    statusSel.style.cssText = 'width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit';
+    ['対応中 / In Progress','完了 / Closed'].forEach(function(o){
+      var opt = document.createElement('option'); opt.textContent = o; statusSel.appendChild(opt);
+    });
+    statusTd.appendChild(statusSel);
+    newTr.appendChild(numTd);
+    newTr.appendChild(locTd);
     newTr.appendChild(badTd);
     newTr.appendChild(goodTd);
-    newTr.innerHTML +=
-      '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
-      '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit">' +
-        '<option>対応中 / In Progress</option><option>完了 / Closed</option>' +
-      '</select></td>';
+    newTr.appendChild(assigneeTd);
+    newTr.appendChild(statusTd);
     tbody.appendChild(newTr);
     addFindingPhotoRow(n);
     showToast('⚠️ 指摘事項に自動追加しました');
