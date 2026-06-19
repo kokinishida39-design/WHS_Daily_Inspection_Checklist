@@ -1,1626 +1,1608 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Inspection Check List | AMZL JP WHS</title>
-  <style>
-    :root {
-      --primary: #1a6fb5;
-      --primary-dark: #0f4d82;
-      --ok: #2e7d32;
-      --ng: #c62828;
-      --na: #757575;
-      --border: #ddd;
-      --bg: #f0f4f8;
-      --white: #fff;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Yu Gothic', sans-serif;
-      background: var(--bg);
-      color: #333;
-      font-size: 14px;
-    }
-    .app-header {
-      background: var(--primary);
-      color: white;
-      padding: 14px 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .app-header h1 { font-size: 20px; font-weight: 700; }
-    .app-header p { font-size: 11px; opacity: 0.75; margin-top: 2px; }
-    .tabs {
-      display: flex;
-      background: var(--primary-dark);
-      padding: 0 24px;
-    }
-    .tab-btn {
-      padding: 12px 24px;
-      color: rgba(255,255,255,0.65);
-      cursor: pointer;
-      border: none;
-      background: none;
-      font-size: 13px;
-      font-weight: 600;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .tab-btn:hover { color: white; }
-    .tab-btn.active { color: white; border-bottom-color: #FFD700; }
-    .content { max-width: 980px; margin: 24px auto; padding: 0 20px; }
-    .section {
-      background: white;
-      border-radius: 8px;
-      padding: 22px 24px;
-      margin-bottom: 18px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    .section-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--primary);
-    }
-    .section-title span { font-size: 11px; font-weight: 400; color: #aaa; margin-left: 8px; }
-    .form-row { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
-    .form-group { flex: 1; min-width: 180px; }
-    .form-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
-    .form-group label .en { font-weight: 400; color: #bbb; margin-left: 4px; text-transform: none; }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 8px 11px; border: 1px solid var(--border);
-      border-radius: 5px; font-size: 13px; font-family: inherit; color: #333;
-    }
-    .form-group textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,111,181,0.15);
-    }
-    /* Checklist */
-    .checklist-table { width: 100%; border-collapse: collapse; }
-    .checklist-table th {
-      background: #f0f4f8; padding: 9px 12px; text-align: left;
-      font-size: 11px; font-weight: 700; border: 1px solid var(--border);
-      color: #555; text-transform: uppercase; letter-spacing: 0.3px;
-    }
-    .checklist-table td { padding: 10px 12px; border: 1px solid var(--border); vertical-align: middle; }
-    .checklist-table tr:nth-child(even) td { background: #fafbfc; }
-    .item-name { font-weight: 600; font-size: 13px; }
-    .item-name-en { font-size: 11px; color: #555; margin-top: 2px; }
-    .status-group { display: flex; gap: 6px; flex-wrap: wrap; }
-    .status-btn input[type="radio"] { display: none; }
-    .status-label {
-      padding: 4px 11px; border-radius: 4px; font-size: 12px; font-weight: 700;
-      border: 2px solid; cursor: pointer; transition: all 0.15s; display: inline-block;
-    }
-    .status-ok .status-label { border-color: #a5d6a7; color: #2e7d32; background: #f1f8f1; }
-    .status-ng .status-label { border-color: #ef9a9a; color: #c62828; background: #fff5f5; }
-    .status-na .status-label { border-color: #e0e0e0; color: #9e9e9e; background: #f5f5f5; }
-    input[type="radio"]:checked + .ok-label  { background: #2e7d32; color: white; border-color: #2e7d32; }
-    input[type="radio"]:checked + .ng-label  { background: #c62828; color: white; border-color: #c62828; }
-    input[type="radio"]:checked + .na-label  { background: #9e9e9e; color: white; border-color: #9e9e9e; }
-    .photo-area { display: flex; flex-direction: row; align-items: center; gap: 6px; flex-wrap: nowrap; }
-    .photo-file-input {
-      display: block; width: auto; max-width: 120px; padding: 4px 6px;
-      font-size: 10px; color: #888; background: #fff;
-      border: 1.5px dashed #bbb; border-radius: 5px;
-      cursor: pointer; box-sizing: border-box; flex-shrink: 0;
-    }
-    .photo-upload-label:hover { border-color: var(--primary); color: var(--primary); }
-    .photo-preview { display: none; }
-    .pht { pointer-events: none; }
-    .photo-file-input.photo-done {
-      border: 2px solid #2e7d32 !important;
-      color: #2e7d32; background: #f1f8f1;
-    }
-    
-    /* #photo-page is always visible — it lives inside panel-daily */
-    /* photo-page-title replaced by section-title */
-    .photo-section-title {
-      font-size: 13px; font-weight: 700; color: #555;
-      margin: 16px 0 10px; padding: 6px 10px;
-      background: #f0f4f8; border-radius: 4px;
-    }
-    .photo-empty-msg {
-      color: #aaa; font-size: 13px; text-align: center;
-      padding: 24px 0; line-height: 1.8;
-    }
-    /* Photo page: 1 row = 2 cells side-by-side */
-    .photo-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-    }
-    .photo-item {
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 10px; background: #fafbfc;
-      break-inside: avoid; page-break-inside: avoid;
-    }
-    .photo-item-label {
-      font-size: 11px; font-weight: 700; color: #444;
-      margin-bottom: 8px; line-height: 1.5;
-      border-bottom: 1px solid #e8e8e8; padding-bottom: 6px;
-    }
-    .photo-item-label .en-sub {
-      font-weight: 400; color: #888; display: block; font-size: 10px;
-    }
-    .photo-cell img {
-      width: 100%; max-height: 200px; object-fit: contain;
-      border-radius: 4px; border: 1px solid #eee;
-    }
-    .photo-na {
-      color: #bbb; font-size: 12px; font-style: italic;
-      padding: 24px 0; text-align: center;
-      border: 1px dashed #ddd; border-radius: 4px;
-      background: #fafafa;
-    }
-    .photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .photo-pair-label {
-      font-size: 10px; font-weight: 700; margin-bottom: 4px;
-    }
-    .remark-input {
-      width: 100%; border: 1px solid #bbb; padding: 6px 10px;
-      font-size: 12px; border-radius: 4px; font-family: inherit;
-      background: #fafcff; color: #333;
-    }
-    .remark-input:focus { outline: none; border-color: var(--primary); }
-    /* Incident table */
-    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .data-table th {
-      background: #f0f4f8; padding: 8px 10px; font-size: 11px; font-weight: 700;
-      border: 1px solid var(--border); color: #555; text-transform: uppercase;
-    }
-    .data-table td { border: 1px solid var(--border); padding: 0; }
-    .data-table td input, .data-table td select {
-      width: 100%; border: none; padding: 7px 9px; font-size: 12px;
-      background: transparent; font-family: inherit; color: #333;
-    }
-    .data-table td input:focus, .data-table td select:focus { outline: 1px solid var(--primary); background: #f0f7ff; }
-    /* KPI grid */
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-    .kpi-card { border: 1px solid var(--border); border-radius: 7px; padding: 14px; text-align: center; background: #fafbfc; }
-    .kpi-card label { display: block; font-size: 10px; font-weight: 700; color: #888; margin-bottom: 10px; line-height: 1.4; text-transform: uppercase; }
-    .kpi-card input {
-      width: 100%; text-align: center; font-size: 28px; font-weight: 800;
-      color: var(--primary); border: none; border-bottom: 2px solid var(--border);
-      padding: 2px 4px; background: transparent; font-family: inherit;
-    }
-    .kpi-card input:focus { outline: none; border-bottom-color: var(--primary); }
-    .kpi-card .unit { font-size: 10px; color: #bbb; margin-top: 5px; }
-    /* Buttons */
-    .btn-row { display: flex; gap: 12px; justify-content: flex-end; margin: 20px 0 8px; }
-    .btn {
-      padding: 10px 22px; border: none; border-radius: 5px; cursor: pointer;
-      font-size: 13px; font-weight: 700; transition: all 0.2s; font-family: inherit;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-secondary { background: white; color: var(--primary); border: 2px solid var(--primary); }
-    .btn-secondary:hover { background: #f0f4f8; }
-    .btn-clear { background: white; color: #aaa; border: 2px solid #ddd; }
-    .btn-clear:hover { background: #fff5f5; color: #c62828; border-color: #ffcdd2; }
-    .add-row-btn {
-      font-size: 12px; color: var(--primary); cursor: pointer; border: none;
-      background: none; padding: 5px 0; text-decoration: none; font-family: inherit;
-      font-weight: 600; display: flex; align-items: center; gap: 4px;
-    }
-    .add-row-btn:hover { text-decoration: underline; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 24px; right: 24px; background: #323232; color: white;
-      padding: 12px 20px; border-radius: 6px; font-size: 13px; font-weight: 600;
-      opacity: 0; transform: translateY(8px); transition: all 0.3s; pointer-events: none; z-index: 999;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
-
-    /* ===== PRINT STYLES ===== */
-    /* ===== MOBILE RESPONSIVE ===== */
-    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-    @media (max-width: 640px) {
-      .app-header { padding: 12px 16px; }
-      .app-header h1 { font-size: 15px; }
-      .app-header p { font-size: 10px; }
-
-      .tabs { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .tab-btn { padding: 11px 14px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
-
-      .content { margin: 12px auto; padding: 0 10px; }
-      .section { padding: 14px 12px; margin-bottom: 10px; }
-      .section-title { font-size: 13px; }
-
-      .form-row { flex-direction: column; gap: 10px; }
-      .form-group { min-width: 0 !important; }
-
-      /* Checklist → card layout */
-      .checklist-table thead { display: none; }
-      .checklist-table,
-      .checklist-table tbody,
-      .checklist-table tr,
-      .checklist-table td { display: block; width: 100%; }
-      .checklist-table tr {
-        border: 1px solid var(--border); border-radius: 8px;
-        margin-bottom: 10px; padding: 12px; background: white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      }
-      .checklist-table tr:nth-child(even) td { background: transparent; }
-      .checklist-table td { border: none; padding: 3px 0; }
-      .checklist-table td:first-child { display: none; }
-
-      .item-name { font-size: 14px; }
-      .item-name-en { font-size: 12px; color: #444; }
-
-      .status-group { gap: 10px; margin: 10px 0 6px; }
-      .status-label { padding: 9px 18px; font-size: 14px; }
-
-      .remark-input { font-size: 14px; padding: 8px; }
-
-      .photo-area { flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-      .photo-upload-label { padding: 9px 14px; font-size: 13px; }
-
-      .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .kpi-card { padding: 12px 8px; }
-      .kpi-card label { font-size: 9px; }
-      .kpi-card input { font-size: 22px; }
-
-      .btn-row { flex-direction: column; gap: 10px; }
-      .btn { width: 100%; padding: 15px; font-size: 15px; text-align: center; }
-      .add-row-btn { padding: 10px 0; font-size: 14px; }
-
-      .toast { bottom: 16px; right: 12px; left: 12px; text-align: center; }
-
-      /* Section overflow fix */
-      .section { overflow: hidden; }
-
-      /* Data tables → card layout on mobile */
-      .table-scroll { overflow: visible; }
-      .data-table thead { display: none; }
-      .data-table,
-      .data-table tbody,
-      .data-table tr,
-      .data-table td { display: block; width: 100%; box-sizing: border-box; }
-      .data-table tr {
-        border: 1px solid var(--border); border-radius: 8px;
-        margin-bottom: 12px; padding: 10px 12px; background: white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      }
-      .data-table td {
-        border: none; border-bottom: 1px solid #f0f0f0;
-        padding: 7px 0; min-height: 0;
-      }
-      .data-table td:last-child { border-bottom: none; }
-      .data-table td:first-child { display: none; }
-      .data-table td input,
-      .data-table td select { font-size: 14px; padding: 6px 4px; width: 100%; }
-      /* BAD / GOOD colored areas */
-      .data-table td[style*="#fff8f8"] {
-        background: #fff0f0 !important; border-radius: 6px; padding: 8px !important; margin-bottom: 4px;
-      }
-      .data-table td[style*="#f6fff6"] {
-        background: #f0fff0 !important; border-radius: 6px; padding: 8px !important;
-      }
-      .data-table td[style*="#fff8f8"]::before {
-        content: "🔴 BAD（指摘内容）";
-        display: block; font-size: 11px; font-weight: 700; color: #c62828; margin-bottom: 4px;
-      }
-      .data-table td[style*="#f6fff6"]::before {
-        content: "🟢 GOOD（是正後）";
-        display: block; font-size: 11px; font-weight: 700; color: #2e7d32; margin-bottom: 4px;
-      }
-    }
-
-    @media print {
-      body { background: white; font-size: 12px; }
-      .app-header { background: var(--primary) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .tabs, .btn-row, .add-row-btn { display: none !important; }
-      .content { margin: 0; padding: 0; max-width: 100%; }
-      .section { box-shadow: none; page-break-inside: avoid; border: 1px solid #eee; }
-      .photo-preview { display: none !important; }
-      .photo-upload-label { display: none !important; }
-      /* 印刷時: アップロードボタン非表示・サムネイル表示 */
-      .photo-file-input { display: none !important; }
-      .photo-thumb { display: block !important; width: 48px !important; height: 48px !important; margin: 0 !important; }
-      /* チェックリストは新カードレイアウトで対応 */
-      .tab-panel { display: none !important; }
-      .tab-panel.active { display: block !important; }
-      .checklist-table th, .data-table th, .kpi-card {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      input, select, textarea {
-        border: none !important; border-bottom: 1px solid #ccc !important;
-        background: transparent !important;
-      }
-      .kpi-card input { border-bottom: 1px solid #ccc !important; }
-      .status-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-      /* ===== 5ページ構成 カードレイアウト ===== */
-
-      /* チェックリストsectionはページまたぎOK */
-      #checklist-section { page-break-inside: auto !important; }
-      .checklist-table { display: block !important; }
-      .checklist-table thead { display: none !important; }
-
-      /* Page1: 行1-3 を横3列カード */
-      #cb-p1 {
-        display: flex !important;
-        flex-direction: row;
-        gap: 6px;
-        page-break-after: always;
-        break-after: always;
-      }
-      #cb-p1 tr { flex: 1 1 0; }
-
-      /* Page2: 行4-9を3列×2行（P1と同じ横3カード構成） */
-      #cb-p2 {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: repeat(2, auto);
-        gap: 6px;
-      }
-      #cb-p2 tr:nth-child(1) { grid-column: 1; grid-row: 1; }
-      #cb-p2 tr:nth-child(2) { grid-column: 2; grid-row: 1; }
-      #cb-p2 tr:nth-child(3) { grid-column: 3; grid-row: 1; }
-      #cb-p2 tr:nth-child(4) { grid-column: 1; grid-row: 2; }
-      #cb-p2 tr:nth-child(5) { grid-column: 2; grid-row: 2; }
-      #cb-p2 tr:nth-child(6) { grid-column: 3; grid-row: 2; }
-
-      /* 各行をカード表示 */
-      .checklist-table tbody tr {
-        display: flex !important;
-        flex-direction: column;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 8px;
-        box-sizing: border-box;
-        break-inside: avoid;
-      }
-      .checklist-table tbody tr td {
-        display: block !important;
-        border: none !important;
-        padding: 2px 0 !important;
-        width: 100% !important;
-      }
-      .checklist-table tbody tr td:first-child { display: none !important; }
-
-      /* Page3: 指摘事項 / Page4: 総評 */
-      #findings-section { page-break-before: always; break-before: always; }
-      /* モバイルCSSのblock化をprint時に強制リセット */
-      #findings-section .data-table { display: table !important; width: 100% !important; }
-      #findings-section .data-table thead { display: table-header-group !important; }
-      #findings-section .data-table tbody { display: table-row-group !important; }
-      #findings-section .data-table tr {
-        display: table-row !important;
-        border: none !important; border-radius: 0 !important;
-        margin: 0 !important; padding: 0 !important; box-shadow: none !important;
-      }
-      #findings-section .data-table td {
-        display: table-cell !important;
-        border-bottom: 1px solid #eee !important;
-        padding: 6px 8px !important;
-        width: auto !important; min-height: 0 !important;
-        vertical-align: top !important;
-      }
-      #findings-section .data-table td:first-child { display: table-cell !important; }
-      #comment-section { page-break-before: always; break-before: always; }
-
-      /* Page5: 写真記録 3x3（全9枚1ページ）*/
-      .photo-grid {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr !important;
-        gap: 6px !important;
-      }
-      .photo-item { break-inside: avoid; page-break-inside: avoid; max-height: none !important; padding: 4px !important; }
-      #photo-page {
-        display: block !important;
-        page-break-before: always;
-        page-break-inside: auto !important;
-        box-shadow: none !important;
-        border: 1px solid #eee !important;
-      }
-      /* 写真記録セルの動的img（.pciを置換したもの）も確実に印刷 */
-      .photo-cell img {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: 100px !important;
-        height: auto !important;
-        object-fit: contain !important;
-        margin: 2px auto !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      .photo-empty-msg { display: none !important; }
-      .photo-grid {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr !important;
-        gap: 4px !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .photo-item-label { font-size: 9px !important; line-height: 1.2 !important; }
-      .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .photo-item { break-inside: avoid; page-break-inside: avoid; }
-      .photo-has-image { border-color: #2e7d32 !important; background: #f1f8f1 !important; }
-
-      /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
-      img[data-ng-photo],
-      img[data-good-photo],
-      img[data-bad-photo],
-      .finding-photo {
-        display: block !important;
-        max-width: 200px !important;
-        max-height: 150px !important;
-        width: auto !important;
-        height: auto !important;
-        margin: 6px auto !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      /* finding-photo: 非表示スロットはプリントでも非表示 */
-      .finding-photo[style*='display:none'] { display: none !important; }
-      .pci, .pci.loaded {
-        display: block !important;
-        max-width: 240px !important;
-        max-height: 180px !important;
-        width: auto !important;
-        height: auto !important;
-        margin: 4px auto !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-    }
-  
-    .photo-thumb {
-      display: none; width: 56px; height: 56px;
-      object-fit: cover; border-radius: 4px; margin-top: 0;
-      border: 1.5px solid #2e7d32; cursor: pointer; flex-shrink: 0;
-    }
-  
-    /* Photo record images: hidden until photo uploaded */
-    .pci { display: none; }
-    .pci.loaded { display: block !important; }
-  </style>
-</head>
-<body>
-
-<div class="app-header">
-  <div>
-    <h1>🦺 Daily Inspection Check List</h1>
-    <p>WHS Report System &nbsp;|&nbsp; AMZL JP WHS &nbsp;—&nbsp; DKJ4-DS (Yotsukaido, JPN)</p>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('daily', this)">📋 日次点検 / Daily Inspection</button>
-  <button class="tab-btn" onclick="switchTab('weekly', this)">📊 週次報告 / Weekly Report</button>
-  <button class="tab-btn" onclick="switchTab('monthly', this)">📈 月次報告 / Monthly Report</button>
-</div>
-
-<div class="content">
-
-  <!-- ===== DAILY INSPECTION ===== -->
-  <div class="tab-panel active" id="panel-daily">
-
-    <div class="section">
-      <div class="section-title">基本情報 <span>Basic Information</span></div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>点検日時 <span class="en">Date &amp; Time</span></label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="date" id="d-date" style="flex:1;min-width:0">
-            <input type="time" id="d-time" style="flex:1;min-width:0">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>天候 <span class="en">Weather</span></label>
-          <select id="d-weather">
-            <option>晴れ / Sunny</option>
-            <option>曇り / Cloudy</option>
-            <option>雨 / Rainy</option>
-            <option>雪 / Snowy</option>
-            <option>強風 / Windy</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>点検エリア <span class="en">Area</span></label>
-          <select id="d-area">
-            <option>全エリア / Entire Facility</option>
-            <option>屋内 / Indoor (UTR)</option>
-            <option>屋外 / Outdoor (OTR)</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>サイト <span class="en">Site</span></label>
-          <input type="text" id="d-site" value="DKJ4-DS (Yotsukaido, JPN)">
-        </div>
-        <div class="form-group">
-          <label>点検者 <span class="en">Inspector</span></label>
-          <input type="text" id="d-inspector" value="Koki Nishida (konnki)">
-        </div>
-
-      </div>
-    </div>
-
-    <div class="section" id="checklist-section">
-      <div class="section-title">安全点検チェックリスト <span>Safety Inspection Checklist</span></div>
-      <table class="checklist-table">
-        <thead>
-          <tr>
-            <th style="width:32px">#</th>
-            <th style="width:230px">点検項目 / Inspection Item</th>
-            <th style="width:190px">結果 / Result</th>
-            <th>所見・備考 / Remarks</th>
-            <th style="width:130px">📷 写真 / Photo</th>
-          </tr>
-        </thead>
-        <tbody id="cb-p1">
-          <!-- 1 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">1</td>
-            <td><div class="item-name">避難経路・非常口</div><div class="item-name-en">Emergency Exits &amp; Evacuation Routes</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-exit" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-exit" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-exit" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-exit" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-exit" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 2 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">2</td>
-            <td><div class="item-name">消火設備（消火器・スプリンクラー）</div><div class="item-name-en">Fire Suppression Equipment</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-fire" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-fire" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-fire" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-fire" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-fire" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 3 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">3</td>
-            <td><div class="item-name">救急用品（AED・救急箱）</div><div class="item-name-en">First Aid Equipment (AED, First Aid Kit)</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-firstaid" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-firstaid" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-firstaid" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-firstaid" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-firstaid" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-        </tbody>
-        <tbody id="cb-p2">
-          <!-- 4 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">4</td>
-            <td><div class="item-name">歩行帯を妨げる障害物はないか？</div><div class="item-name-en">Any obstacles blocking the pedestrian walkway?</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-walkway" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-walkway" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-walkway" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-walkway" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-walkway" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 5 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">5</td>
-            <td><div class="item-name">作業エリア（Induction / Stow / Staging）に異常はないか？</div><div class="item-name-en">Any abnormalities in work areas (Induction / Stow / Staging)?</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-workarea" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-workarea" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-workarea" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-workarea" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-workarea" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 6 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">6</td>
-            <td><div class="item-name">整理整頓・清潔（5S）</div><div class="item-name-en">Housekeeping &amp; 5S</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-fivs" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-fivs" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-fivs" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-fivs" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-fivs" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 7 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">7</td>
-            <td><div class="item-name">安全標識・掲示物（破損していないか？）</div><div class="item-name-en">Safety Signs &amp; Postings (Any Damage?)</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-signage" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-signage" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-signage" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-signage" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-signage" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 8 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">8</td>
-            <td><div class="item-name">PPE（個人防護具）着用状況</div><div class="item-name-en">PPE (Personal Protective Equipment) Usage</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-ppe" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-ppe" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-ppe" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-ppe" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-ppe" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 9 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">9</td>
-            <td><div class="item-name">緊急連絡体制・掲示</div><div class="item-name-en">Emergency Contact System &amp; Posting</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-emergency" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-emergency" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-emergency" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-emergency" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-emergency" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="section" id="findings-section">
-      <div class="section-title">指摘事項・是正措置 <span>Findings &amp; Corrective Actions</span></div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:28px">#</th>
-            <th style="width:120px">場所 / Location</th>
-            <th>🔴 BAD（指摘内容 / Finding）</th>
-            <th>🟢 GOOD（是正後 / After Correction）</th>
-            <th style="width:120px">担当者 / Assignee</th>
-            <th style="width:110px">ステータス / Status</th>
-          </tr>
-        </thead>
-        <tbody id="findings-body"></tbody>
-      </table>
-      <button class="add-row-btn" onclick="addRow('findings-body', findingRowTemplate)">＋ 行を追加 / Add Row</button>
-    </div>
-
-    <div class="section" id="comment-section">
-      <div class="section-title">総評・特記事項 <span>Overall Comment</span></div>
-      <div class="form-group">
-        <textarea id="d-comment" placeholder="総評・特記事項を記入してください&#10;Enter overall comments and special notes..."></textarea>
-      </div>
-      <div class="form-row" style="margin-top:14px">
-        <div class="form-group">
-          <label>点検者サイン / Inspector Signature</label>
-          <input type="text" id="d-sign" value="Koki Nishida">
-        </div>
-        <div class="form-group" style="flex:2"></div>
-      </div>
-    </div>
-
-    <!-- ===== PHOTO RECORD SECTION ===== -->
-    <div id="photo-page" class="section">
-      <div class="section-title">📷 写真記録 <span>Photo Evidence</span></div>
-      <div class="photo-section-title">チェックリスト写真 / Checklist Photos</div>
-      <div class="photo-grid" id="photo-grid-checklist">
-        <div class="photo-item"><div class="photo-item-label">1. 避難経路・非常口<span class="en-sub">Emergency Exits &amp; Evacuation Routes</span></div><div class="photo-cell" id="pc-exit"><img id="pci-exit" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-exit">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">2. 消火設備（消火器・スプリンクラー）<span class="en-sub">Fire Suppression Equipment</span></div><div class="photo-cell" id="pc-fire"><img id="pci-fire" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-fire">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">3. 救急用品（AED・救急箱）<span class="en-sub">First Aid Equipment</span></div><div class="photo-cell" id="pc-firstaid"><img id="pci-firstaid" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-firstaid">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">4. 歩行帯を妨げる障害物はないか？<span class="en-sub">Obstacles Blocking Walkway?</span></div><div class="photo-cell" id="pc-walkway"><img id="pci-walkway" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-walkway">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">5. 作業エリアに異常はないか？<span class="en-sub">Abnormalities in Work Areas?</span></div><div class="photo-cell" id="pc-workarea"><img id="pci-workarea" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-workarea">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">6. 整理整頓・清潔（5S）<span class="en-sub">Housekeeping &amp; 5S</span></div><div class="photo-cell" id="pc-fivs"><img id="pci-fivs" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-fivs">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">7. 安全標識・掲示物<span class="en-sub">Safety Signs &amp; Postings</span></div><div class="photo-cell" id="pc-signage"><img id="pci-signage" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-signage">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">8. PPE（個人防護具）着用状況<span class="en-sub">PPE Usage</span></div><div class="photo-cell" id="pc-ppe"><img id="pci-ppe" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-ppe">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">9. 緊急連絡体制・掲示<span class="en-sub">Emergency Contact System</span></div><div class="photo-cell" id="pc-emergency"><img id="pci-emergency" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-emergency">Not available</div></div></div>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
-      <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
-      <button class="btn btn-secondary" onclick="saveDailyComplete()" style="background:#2e7d32;color:white;border-color:#2e7d32;">✅ 日次完了・保存</button>
-      <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
-    </div>
-  </div>
-
-  <!-- ===== WEEKLY REPORT ===== -->
-  <div class="tab-panel" id="panel-weekly">
-
-    <div class="section">
-      <div class="section-title">基本情報 <span>Basic Information</span></div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>報告期間（開始）<span class="en">Period From</span></label>
-          <input type="date" id="w-from">
-        </div>
-        <div class="form-group">
-          <label>報告期間（終了）<span class="en">Period To</span></label>
-          <input type="date" id="w-to">
-        </div>
-        <div class="form-group">
-          <label>提出日 <span class="en">Submission Date</span></label>
-          <input type="date" id="w-submit">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>報告者 <span class="en">Reported By</span></label>
-          <input type="text" id="w-reporter" value="Koki Nishida (konnki)">
-        </div>
-        <div class="form-group">
-          <label>サイト <span class="en">Site</span></label>
-          <input type="text" id="w-site" value="DKJ4-DS (Yotsukaido, JPN)">
-        </div>
-        <div class="form-group">
-          <label>上長 <span class="en">Manager</span></label>
-          <input type="text" id="w-manager" value="yasuyamt">
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">週次指標 <span>Weekly KPIs</span></div>
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <label>日次点検実施日数<br>Inspections Conducted</label>
-          <input type="number" id="w-kpi1" value="5" min="0" max="7">
-          <div class="unit">日 / days</div>
-        </div>
-        <div class="kpi-card">
-          <label>指摘件数<br>Findings Identified</label>
-          <input type="number" id="w-kpi2" value="0" min="0">
-          <div class="unit">件 / items</div>
-        </div>
-        <div class="kpi-card">
-          <label>是正完了件数<br>Findings Closed</label>
-          <input type="number" id="w-kpi3" value="0" min="0">
-          <div class="unit">件 / items</div>
-        </div>
-        <div class="kpi-card">
-          <label>インシデント件数<br>Incidents</label>
-          <input type="number" id="w-kpi4" value="0" min="0">
-          <div class="unit">件 / cases</div>
-        </div>
-        <div class="kpi-card">
-          <label>ヒヤリハット件数<br>Near Misses</label>
-          <input type="number" id="w-kpi5" value="0" min="0">
-          <div class="unit">件 / cases</div>
-        </div>
-        <div class="kpi-card">
-          <label>安全教育実施回数<br>Safety Trainings</label>
-          <input type="number" id="w-kpi6" value="0" min="0">
-          <div class="unit">回 / sessions</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">繰り返し指摘事項（エスカレーション）<span>Recurring Findings — Escalated from Daily Checks</span></div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:28px">#</th>
-            <th>指摘内容 / Finding</th>
-            <th style="width:90px">指摘回数 / Times</th>
-            <th style="width:110px">優先度 / Priority</th>
-            <th style="width:120px">是正期限 / Due</th>
-            <th style="width:130px">担当者 / Assignee</th>
-            <th style="width:130px">ステータス / Status</th>
-          </tr>
-        </thead>
-        <tbody id="escalation-body"></tbody>
-      </table>
-      <button class="add-row-btn" onclick="addRow('escalation-body', escalationRowTemplate)">＋ 行を追加 / Add Row</button>
-    </div>
-
-    <div class="section">
-      <div class="section-title">インシデント・ヒヤリハット詳細 <span>Incident / Near Miss Details</span></div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:28px">#</th>
-            <th style="width:120px">発生日 / Date</th>
-            <th style="width:140px">種別 / Type</th>
-            <th>概要 / Description</th>
-            <th style="width:140px">対応状況 / Status</th>
-          </tr>
-        </thead>
-        <tbody id="incident-body"></tbody>
-      </table>
-      <button class="add-row-btn" onclick="addRow('incident-body', incidentRowTemplate)">＋ 行を追加 / Add Row</button>
-    </div>
-
-    <div class="section">
-      <div class="section-title">今週の主な活動 <span>Key Activities This Week</span></div>
-      <div class="form-group">
-        <textarea id="w-activities" placeholder="今週実施した主な安全活動・取り組みを記載してください&#10;Describe key safety activities conducted this week..."></textarea>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">未解決事項・継続対応 <span>Open Items & Follow-ups</span></div>
-      <div class="form-group">
-        <textarea id="w-openitems" placeholder="未解決の指摘事項や継続対応中の内容&#10;List open findings and ongoing action items..."></textarea>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">来週の予定 <span>Next Week Plan</span></div>
-      <div class="form-group">
-        <textarea id="w-nextplan" placeholder="来週予定している安全活動・重点取り組み&#10;Planned safety activities for next week..."></textarea>
-      </div>
-    </div>
-
-    <div class="section" id="comment-section">
-      <div class="section-title">総評・特記事項 <span>Overall Comments</span></div>
-      <div class="form-group">
-        <textarea id="w-comment" placeholder="総評や特記事項&#10;Overall comments and special notes..."></textarea>
-      </div>
-      <div class="form-row" style="margin-top:14px">
-        <div class="form-group">
-          <label>報告者サイン / Reporter Signature</label>
-          <input type="text" id="w-sign" value="Koki Nishida">
-        </div>
-        <div class="form-group" style="flex:2"></div>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
-      <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
-      <button class="btn btn-secondary" onclick="aggregateWeekly()" style="background:#1565c0;color:white;border-color:#1565c0;">📊 日次から集計</button>
-      <button class="btn btn-secondary" onclick="saveWeeklyComplete()" style="background:#2e7d32;color:white;border-color:#2e7d32;">✅ 週次完了・保存</button>
-      <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
-    </div>
-  </div>
-
-  <!-- ===== MONTHLY REPORT ===== -->
-  <div class="tab-panel" id="panel-monthly">
-
-    <div class="section">
-      <div class="section-title">基本情報 <span>Basic Information</span></div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>対象年月 <span class="en">Report Month</span></label>
-          <input type="month" id="m-month">
-        </div>
-        <div class="form-group">
-          <label>提出日 <span class="en">Submission Date</span></label>
-          <input type="date" id="m-submit">
-        </div>
-        <div class="form-group">
-          <label>報告者 <span class="en">Reported By</span></label>
-          <input type="text" id="m-reporter" value="Koki Nishida (konnki)">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>サイト <span class="en">Site</span></label>
-          <input type="text" id="m-site" value="DKJ4-DS (Yotsukaido, JPN)">
-        </div>
-        <div class="form-group">
-          <label>上長 <span class="en">Manager</span></label>
-          <input type="text" id="m-manager" value="yasuyamt">
-        </div>
-        <div class="form-group" style="flex:1"></div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">月次指標 <span>Monthly KPIs</span></div>
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <label>点検実施率<br>Inspection Completion Rate</label>
-          <input type="number" id="m-kpi1" value="100" min="0" max="100">
-          <div class="unit">% / percent</div>
-        </div>
-        <div class="kpi-card">
-          <label>総指摘件数<br>Total Findings</label>
-          <input type="number" id="m-kpi2" value="0" min="0">
-          <div class="unit">件 / items</div>
-        </div>
-        <div class="kpi-card">
-          <label>是正完了率<br>Closure Rate</label>
-          <input type="number" id="m-kpi3" value="0" min="0" max="100">
-          <div class="unit">% / percent</div>
-        </div>
-        <div class="kpi-card">
-          <label>TRIR<br>Total Recordable Incident Rate</label>
-          <input type="number" id="m-kpi4" value="0.00" step="0.01" min="0">
-          <div class="unit">rate</div>
-        </div>
-        <div class="kpi-card">
-          <label>インシデント件数<br>Total Incidents</label>
-          <input type="number" id="m-kpi5" value="0" min="0">
-          <div class="unit">件 / cases</div>
-        </div>
-        <div class="kpi-card">
-          <label>ヒヤリハット件数<br>Near Misses</label>
-          <input type="number" id="m-kpi6" value="0" min="0">
-          <div class="unit">件 / cases</div>
-        </div>
-        <div class="kpi-card">
-          <label>安全教育参加者数<br>Training Participants</label>
-          <input type="number" id="m-kpi7" value="0" min="0">
-          <div class="unit">人 / people</div>
-        </div>
-        <div class="kpi-card">
-          <label>無災害継続日数<br>Days Without Incident</label>
-          <input type="number" id="m-kpi8" value="0" min="0">
-          <div class="unit">日 / days</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">今月の活動サマリー <span>Monthly Activity Summary</span></div>
-      <div class="form-group">
-        <textarea id="m-summary" placeholder="今月実施した安全活動の概要&#10;Summarize safety activities conducted this month..."></textarea>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">主要課題・改善事項 <span>Key Issues & Improvements</span></div>
-      <div class="form-group">
-        <textarea id="m-issues" placeholder="今月の主要な安全課題と対応内容&#10;Major safety issues and corrective actions taken..."></textarea>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">来月の重点取り組み <span>Next Month Focus Areas</span></div>
-      <div class="form-group">
-        <textarea id="m-nextplan" placeholder="来月の安全重点取り組みや目標&#10;Safety focus areas and targets for next month..."></textarea>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">総評 <span>Overall Comments</span></div>
-      <div class="form-group">
-        <textarea id="m-comment" placeholder="総評・特記事項&#10;Overall comments and special notes..."></textarea>
-      </div>
-      <div class="form-row" style="margin-top:14px">
-        <div class="form-group">
-          <label>報告者サイン / Reporter Signature</label>
-          <input type="text" id="m-sign" value="Koki Nishida">
-        </div>
-        <div class="form-group" style="flex:2"></div>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
-      <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
-      <button class="btn btn-secondary" onclick="aggregateMonthly()" style="background:#1565c0;color:white;border-color:#1565c0;">📊 週次から集計</button>
-      <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
-    </div>
-  </div>
-
-
-
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ===== PHOTO STORE =====
-var photoStore = {};
-
-// ===== PHOTO UPLOAD — onchange直接呼び出し（iOS Safari互換）=====
-// document.addEventListener委譲はiOS Safariのfile inputで発火しないため廃止
-window._photoHandler = function(inp) {
-  if (!inp.files || !inp.files[0]) return;
-
-  // IDから写真キーを取得: fi-exit → exit, fi-fbad1 → fbad1
-  var id = inp.id.replace(/^fi-/, '');
-  var file = inp.files[0];
-
-  // ボタンを完了色に変更（即時）
-  inp.classList.add('photo-done');
-
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    var dataUrl = ev.target.result;
-    photoStore[id] = dataUrl;
-
-    // 写真記録セクションの枠に画像を挿入
-    var pc = document.getElementById('pc-' + id);
-    if (pc) {
-      var img = document.createElement('img');
-      img.src = dataUrl;
-      img.className = 'pci loaded';
-      img.style.cssText = 'display:block;width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #2e7d32;';
-      while (pc.firstChild) pc.removeChild(pc.firstChild);
-      pc.appendChild(img);
-    }
-
-    // チェックリスト行のサムネイル
-    var pth = document.getElementById('pth-' + id);
-    if (pth) { pth.src = dataUrl; pth.style.display = 'block'; }
-
-    // カウント更新
-    var n = Object.keys(photoStore).length;
-    var ttl = document.querySelector('#photo-page .section-title');
-    if (ttl) ttl.innerHTML = '📷 写真記録 <span>Photo Evidence (' + n + '件)</span>';
-
-    showToast('📸 写真を記録しました');
-
-    // GOOD写真（fi-fgood{n}）の表示
-    if (/^fgood\d+$/.test(id)) {
-      var goodTd = inp.closest('td');
-      if (goodTd) {
-        var existGoodImg = goodTd.querySelector('img[data-good-photo]');
-        if (existGoodImg) {
-          existGoodImg.src = dataUrl;
-          existGoodImg.style.display = 'block';
-        } else {
-          var goodImg = document.createElement('img');
-          goodImg.src = dataUrl;
-          goodImg.setAttribute('data-good-photo','1');
-          goodImg.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px auto';
-          var goodPhotoAreaEl = goodTd.querySelector('.photo-area');
-          if (goodPhotoAreaEl) goodTd.insertBefore(goodImg, goodPhotoAreaEl);
-          else goodTd.appendChild(goodImg);
-        }
-      }
-    }
-
-    // BAD写真（手動追加 fi-fbad{n}）の表示
-    if (/^fbad\d+$/.test(id)) {
-      var badTdEl = inp.closest('td');
-      if (badTdEl) {
-        var existBadImg = badTdEl.querySelector('img[data-bad-photo]');
-        if (existBadImg) {
-          existBadImg.src = dataUrl;
-          existBadImg.style.display = 'block';
-        } else {
-          var badImgEl = document.createElement('img');
-          badImgEl.src = dataUrl;
-          badImgEl.setAttribute('data-bad-photo','1');
-          badImgEl.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
-          var badPhotoAreaEl2 = badTdEl.querySelector('.photo-area');
-          if (badPhotoAreaEl2) badTdEl.insertBefore(badImgEl, badPhotoAreaEl2);
-          else badTdEl.appendChild(badImgEl);
-        }
-      }
-    }
-
-    // チェックリスト項目の写真なら、NG指摘行のBADにも反映
-    if (/^[a-z]+$/.test(id)) { // fi-exit → exit など（finding番号ではなく項目キー）
-      var ngRow = document.querySelector('tr[data-ng-key="st-' + id + '"]');
-      if (ngRow) {
-        var badTd = ngRow.querySelectorAll('td')[2];
-        if (badTd) {
-          var existNgImg = badTd.querySelector('img[data-ng-photo]');
-          if (existNgImg) {
-            existNgImg.src = dataUrl;
-            existNgImg.style.display = 'block';
-          } else {
-            var ngImg = document.createElement('img');
-            ngImg.src = dataUrl;
-            ngImg.setAttribute('data-ng-photo','1');
-            ngImg.style.cssText = 'display:block;max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
-            var photoAreaEl = badTd.querySelector('.photo-area');
-            if (photoAreaEl) badTd.insertBefore(ngImg, photoAreaEl);
-          }
-        }
-      }
-    }
-  };
-  reader.onerror = function() { showToast('⚠️ 読み込みエラー'); };
-  reader.readAsDataURL(file);
-};
-
-// ===== ADD FINDING PHOTO ROW =====
-function addFindingPhotoRow(num) { /* 削除済み：指摘写真は指摘表内に表示 */ }
-
-// ===== ROW TEMPLATES =====
-var findingCount = 0, incidentCount = 0, escalationCount = 0;
-
-function findingRowTemplate() {
-  findingCount++;
-  var n = findingCount;
-  return '' +
-    '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + n + '</td>' +
-    '<td><input type="text" placeholder="場所 / Location"></td>' +
-    '<td style="background:#fff8f8;vertical-align:top">' +
-      '<input type="text" class="remark-input" placeholder="BAD：問題の内容">' +
-      '<img id="img-fbad' + n + '" class="finding-photo" data-bad-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto" alt="">' +
-      '<div class="photo-area" style="margin-top:8px">' +
-        '<input type="file" id="fi-fbad' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
-      '</div>' +
-    '</td>' +
-    '<td style="background:#f6fff6;vertical-align:top">' +
-      '<input type="text" class="remark-input" placeholder="GOOD：是正後の状況">' +
-      '<img id="img-fgood' + n + '" class="finding-photo" data-good-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto" alt="">' +
-      '<div class="photo-area" style="margin-top:8px">' +
-        '<input type="file" id="fi-fgood' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
-      '</div>' +
-    '</td>' +
-    '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
-    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit">' +
-      '<option>対応中 / In Progress</option><option>完了 / Closed</option>' +
-    '</select></td>';
-}
-
-function escalationRowTemplate() {
-  escalationCount++;
-  return '' +
-    '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + escalationCount + '</td>' +
-    '<td><input type="text" placeholder="指摘内容 / Finding description"></td>' +
-    '<td style="text-align:center"><input type="number" min="2" value="2" style="width:60px;text-align:center;border:none;padding:7px 4px;font-size:14px;font-weight:700;color:#c62828;font-family:inherit"></td>' +
-    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>高 / High</option><option selected>中 / Medium</option><option>低 / Low</option></select></td>' +
-    '<td><input type="date"></td>' +
-    '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
-    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>対応中 / In Progress</option><option>完了 / Closed</option><option>エスカレーション中 / Escalated</option></select></td>';
-}
-
-function incidentRowTemplate() {
-  incidentCount++;
-  return '' +
-    '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + incidentCount + '</td>' +
-    '<td><input type="date"></td>' +
-    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>インシデント / Incident</option><option>ヒヤリハット / Near Miss</option><option>危険予知 / Hazard ID</option></select></td>' +
-    '<td><input type="text" placeholder="概要 / Description"></td>' +
-    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>対応中 / In Progress</option><option>完了 / Closed</option><option>エスカレーション中 / Escalated</option></select></td>';
-}
-
-function addRow(tbodyId, templateFn) {
-  var tbody = document.getElementById(tbodyId);
-  if (!tbody) return;
-  var tr = document.createElement('tr');
-  tr.innerHTML = templateFn();
-  tbody.appendChild(tr);
-  if (tbodyId === 'findings-body') addFindingPhotoRow(findingCount);
-}
-
-// ===== TAB / PRINT / TOAST =====
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(b)   { b.classList.remove('active'); });
-  document.getElementById('panel-' + tab).classList.add('active');
-  btn.classList.add('active');
-}
-function printPage() {
-  window.print();
-}
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 2800);
-}
-
-// ===== SAVE / RESTORE =====
-function debounce(fn, ms) { var t; return function(){ clearTimeout(t); t=setTimeout(fn,ms); }; }
-
-function autoSave() {
-  try {
-    var s = { inputs:{}, radios:{}, tbodies:{}, tab:'', counts:{} };
-    document.querySelectorAll('input[id]:not([type=file]):not([type=radio]), textarea[id], select[id]')
-      .forEach(function(el) { s.inputs[el.id] = el.value; });
-    document.querySelectorAll('input[type="radio"]:checked')
-      .forEach(function(el) { s.radios[el.name] = el.value; });
-    ['findings-body','incident-body','escalation-body'].forEach(function(id) {
-      var el = document.getElementById(id); if (!el) return;
-      var clone = el.cloneNode(true);
-      clone.querySelectorAll('input[type="file"]').forEach(function(i) { i.remove(); });
-      s.tbodies[id] = clone.innerHTML;
-    });
-    var active = document.querySelector('.tab-panel.active');
-    if (active) s.tab = active.id;
-    s.counts = { findingCount:findingCount, incidentCount:incidentCount, escalationCount:escalationCount };
-    localStorage.setItem('whs-autosave', JSON.stringify(s));
-  } catch(e) {}
-}
-
-function autoRestore() {
-  try {
-    var raw = localStorage.getItem('whs-autosave');
-    if (!raw) return false;
-    var s = JSON.parse(raw);
-    if (s.counts) {
-      findingCount    = s.counts.findingCount    || 0;
-      incidentCount   = s.counts.incidentCount   || 0;
-      escalationCount = s.counts.escalationCount || 0;
-    }
-    if (s.tbodies) Object.keys(s.tbodies).forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el && s.tbodies[id]) el.innerHTML = s.tbodies[id];
-    });
-    for (var i = 1; i <= findingCount; i++) addFindingPhotoRow(i);
-    if (s.inputs) Object.keys(s.inputs).forEach(function(id) {
-      var el = document.getElementById(id); if (el) el.value = s.inputs[id];
-    });
-    if (s.radios) Object.keys(s.radios).forEach(function(name) {
-      var el = document.querySelector('input[type="radio"][name="'+name+'"][value="'+s.radios[name]+'"]');
-      if (el) el.checked = true;
-    });
-    if (s.tab) {
-      var idx = ['panel-daily','panel-weekly','panel-monthly'].indexOf(s.tab);
-      if (idx >= 0) {
-        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
-        document.querySelectorAll('.tab-btn').forEach(function(b)   { b.classList.remove('active'); });
-        document.getElementById(s.tab).classList.add('active');
-        document.querySelectorAll('.tab-btn')[idx].classList.add('active');
-      }
-    }
-    return true;
-  } catch(e) { return false; }
-}
-
-function clearData() {
-  if (confirm('入力データをすべてクリアしますか？\nClear all entered data and start fresh?')) {
-    try { localStorage.removeItem('whs-autosave'); } catch(e) {}
-    photoStore = {};
-    location.reload();
-  }
-}
-function saveDraft() { autoSave(); showToast('✅ 保存しました / Saved!'); }
-
-function setDefaults() {
-  var today = new Date(), pad = function(n){ return String(n).padStart(2,'0'); };
-  var d = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
-  var set = function(id,v){ var e=document.getElementById(id); if(e) e.value=v; };
-  set('d-date',d); set('d-time',pad(today.getHours())+':'+pad(today.getMinutes()));
-  set('w-submit',d); set('m-submit',d);
-  set('m-month',today.getFullYear()+'-'+pad(today.getMonth()+1));
-  var dow=today.getDay(), mon=new Date(today);
-  mon.setDate(today.getDate()-(dow===0?6:dow-1));
-  var fri=new Date(mon); fri.setDate(mon.getDate()+4);
-  var fmt=function(x){ return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate()); };
-  set('w-from',fmt(mon)); set('w-to',fmt(fri));
-}
-
-
-// ===== NG自動反映 — チェックリストのNG選択で指摘事項に自動追加 =====
-var checklistItems = {
-  'st-exit':      '避難経路・非常口',
-  'st-fire':      '消火設備（消火器・スプリンクラー）',
-  'st-firstaid':  '救急用品（AED・救急箱）',
-  'st-walkway':   '歩行帯を妨げる障害物',
-  'st-workarea':  '作業エリアの異常',
-  'st-fivs':      '整理整頓・清潔（5S）',
-  'st-signage':   '安全標識・掲示物',
-  'st-ppe':       'PPE着用状況',
-  'st-emergency': '緊急連絡体制・掲示'
-};
-
-function onNgChange(radioName, value) {
-  var itemName = checklistItems[radioName];
-  if (!itemName) return;
-  var tbody = document.getElementById('findings-body');
-  if (!tbody) return;
-  var existing = tbody.querySelector('tr[data-ng-key="' + radioName + '"]');
-
-  if (value === 'NG') {
-    if (existing) return;
-
-    // チェックリスト行から備考テキストを取得
-    var radioEl = document.querySelector('input[type="radio"][name="' + radioName + '"][value="NG"]');
-    var remark = '';
-    if (radioEl) {
-      var checkRow = radioEl.closest('tr');
-      if (checkRow) {
-        var remarkEl = checkRow.querySelector('.remark-input');
-        if (remarkEl) remark = remarkEl.value.trim();
-      }
-    }
-
-    // チェックリスト写真を取得
-    var photoKey = radioName.replace('st-', '');
-    var photoData = photoStore[photoKey] || null;
-
-    var badText = itemName + (remark ? '：' + remark : '');
-
-    findingCount++;
-    var n = findingCount;
-    var newTr = document.createElement('tr');
-    newTr.setAttribute('data-ng-key', radioName);
-
-    // BAD列: テキスト入力 + 既存写真（あれば）+ 新規写真アップロード
-    var badTd = document.createElement('td');
-    badTd.style.cssText = 'background:#fff8f8;vertical-align:top';
-    var badInput = document.createElement('input');
-    badInput.type = 'text'; badInput.className = 'remark-input';
-    badInput.placeholder = 'BAD：問題の内容'; badInput.value = badText;
-    badTd.appendChild(badInput);
-    // チェックリスト写真プレースホルダー（常に作成、写真あれば表示）
-    var badImgSlot = document.createElement('img');
-    badImgSlot.className = 'finding-photo';
-    badImgSlot.setAttribute('data-ng-photo','1');
-    badImgSlot.style.cssText = 'max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
-    badImgSlot.alt = '';
-    if (photoData) { badImgSlot.src = photoData; badImgSlot.style.display = 'block'; }
-    else { badImgSlot.style.display = 'none'; }
-    badTd.appendChild(badImgSlot);
-    // 手動BAD写真プレースホルダー
-    var badManualSlot = document.createElement('img');
-    badManualSlot.id = 'img-fbad' + n;
-    badManualSlot.className = 'finding-photo';
-    badManualSlot.setAttribute('data-bad-photo','1');
-    badManualSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
-    badManualSlot.alt = '';
-    badTd.appendChild(badManualSlot);
-    var badPhotoArea = document.createElement('div');
-    badPhotoArea.className = 'photo-area'; badPhotoArea.style.marginTop = '6px';
-    var badFileInput = document.createElement('input');
-    badFileInput.type = 'file'; badFileInput.id = 'fi-fbad' + n;
-    badFileInput.accept = 'image/*'; badFileInput.className = 'photo-file-input';
-    badFileInput.setAttribute('onchange','window._photoHandler(this)');
-    badPhotoArea.appendChild(badFileInput);
-    badTd.appendChild(badPhotoArea);
-
-    // GOOD列: テキスト入力 + 写真アップロード
-    var goodTd = document.createElement('td');
-    goodTd.style.cssText = 'background:#f6fff6;vertical-align:top';
-    var goodInput = document.createElement('input');
-    goodInput.type = 'text'; goodInput.className = 'remark-input';
-    goodInput.placeholder = 'GOOD：是正後の状況';
-    goodTd.appendChild(goodInput);
-    // GOOD写真プレースホルダー（非表示で先に作成）
-    var goodImgSlot = document.createElement('img');
-    goodImgSlot.id = 'img-fgood' + n;
-    goodImgSlot.className = 'finding-photo';
-    goodImgSlot.setAttribute('data-good-photo','1');
-    goodImgSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto';
-    goodImgSlot.alt = '';
-    goodTd.appendChild(goodImgSlot);
-    var goodPhotoArea = document.createElement('div');
-    goodPhotoArea.className = 'photo-area'; goodPhotoArea.style.marginTop = '6px';
-    var goodFileInput = document.createElement('input');
-    goodFileInput.type = 'file'; goodFileInput.id = 'fi-fgood' + n;
-    goodFileInput.accept = 'image/*'; goodFileInput.className = 'photo-file-input';
-    goodFileInput.setAttribute('onchange','window._photoHandler(this)');
-    goodPhotoArea.appendChild(goodFileInput);
-    goodTd.appendChild(goodPhotoArea);
-
-    // 行を組み立て（innerHTML+=を使わずcreateElementで統一）
-    var numTd = document.createElement('td');
-    numTd.style.cssText = 'text-align:center;color:#bbb;font-size:12px;width:28px';
-    numTd.textContent = n;
-    var locTd = document.createElement('td');
-    var locInput = document.createElement('input');
-    locInput.type = 'text'; locInput.placeholder = '場所 / Location'; locInput.value = itemName;
-    locTd.appendChild(locInput);
-    var assigneeTd = document.createElement('td');
-    var assigneeInput = document.createElement('input');
-    assigneeInput.type = 'text'; assigneeInput.placeholder = '担当者 / Assignee';
-    assigneeTd.appendChild(assigneeInput);
-    var statusTd = document.createElement('td');
-    var statusSel = document.createElement('select');
-    statusSel.style.cssText = 'width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit';
-    ['対応中 / In Progress','完了 / Closed'].forEach(function(o){
-      var opt = document.createElement('option'); opt.textContent = o; statusSel.appendChild(opt);
-    });
-    statusTd.appendChild(statusSel);
-    newTr.appendChild(numTd);
-    newTr.appendChild(locTd);
-    newTr.appendChild(badTd);
-    newTr.appendChild(goodTd);
-    newTr.appendChild(assigneeTd);
-    newTr.appendChild(statusTd);
-    tbody.appendChild(newTr);
-    addFindingPhotoRow(n);
-    showToast('⚠️ 指摘事項に自動追加しました');
-
-  } else {
-    if (existing) {
-      var gInput = existing.querySelectorAll('td')[3] && existing.querySelectorAll('td')[3].querySelector('input[type="text"]');
-      var statusSel = existing.querySelector('select');
-      var isEmpty = !gInput || !gInput.value.trim();
-      var isOpen  = !statusSel || statusSel.value === '対応中 / In Progress';
-      if (isEmpty && isOpen) {
-        existing.parentNode.removeChild(existing);
-        showToast('指摘行を削除しました');
-      }
-    }
-  }
-}
-
-
-// ===== 日次完了保存 / 週次・月次自動集計 =====
-
-function saveDailyComplete() {
-  var today = new Date();
-  var pad = function(n) { return String(n).padStart(2,'0'); };
-  var dateStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
-  var key = 'whs-daily-' + dateStr;
-
-  // NG件数カウント
-  var ngCount = 0;
-  document.querySelectorAll('input[type="radio"][name^="st-"]:checked').forEach(function(r) {
-    if (r.value === 'NG') ngCount++;
-  });
-
-  // 指摘件数・完了件数
-  var findingTotal = 0, findingClosed = 0;
-  document.querySelectorAll('#findings-body tr').forEach(function(tr) {
-    findingTotal++;
-    var sel = tr.querySelector('select');
-    if (sel && sel.value.indexOf('完了') >= 0) findingClosed++;
-  });
-
-  // インシデント・ヒヤリハット
-  var incidentCount = 0, nearMissCount = 0;
-  document.querySelectorAll('#incident-body tr').forEach(function(tr) {
-    var sel = tr.querySelector('select');
-    if (!sel) return;
-    if (sel.value.indexOf('ヒヤリハット') >= 0) nearMissCount++;
-    else incidentCount++;
-  });
-
-  var data = {
-    date: dateStr,
-    ngCount: ngCount,
-    findingTotal: findingTotal,
-    findingClosed: findingClosed,
-    incidentCount: incidentCount,
-    nearMissCount: nearMissCount
-  };
-
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-    // 5週間以上前のデータを自動削除
-    var cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 35);
-    Object.keys(localStorage).forEach(function(k) {
-      if (k.startsWith('whs-daily-')) {
-        var d = new Date(k.replace('whs-daily-',''));
-        if (d < cutoff) localStorage.removeItem(k);
-      }
-    });
-    autoSave();
-    showToast('✅ 日次点検を保存しました（' + dateStr + '）');
-  } catch(e) { showToast('⚠️ 保存エラー'); }
-}
-
-function aggregateWeekly() {
-  var today = new Date();
-  var dow = today.getDay();
-  var mon = new Date(today);
-  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  var pad = function(n) { return String(n).padStart(2,'0'); };
-  var fmt = function(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); };
-
-  var days=0, findings=0, closed=0, incidents=0, nearMisses=0;
-  for (var i = 0; i < 5; i++) {
-    var d = new Date(mon); d.setDate(mon.getDate() + i);
-    if (d > today) break;
-    var raw = localStorage.getItem('whs-daily-' + fmt(d));
-    if (!raw) continue;
-    try {
-      var data = JSON.parse(raw);
-      days++;
-      findings  += data.findingTotal  || 0;
-      closed    += data.findingClosed || 0;
-      incidents += data.incidentCount || 0;
-      nearMisses+= data.nearMissCount || 0;
-    } catch(e) {}
-  }
-
-  if (days === 0) { showToast('⚠️ 今週の日次データがまだありません'); return; }
-
-  var set = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
-  set('w-kpi1', days);
-  set('w-kpi2', findings);
-  set('w-kpi3', closed);
-  set('w-kpi4', incidents);
-  set('w-kpi5', nearMisses);
-  autoSave();
-  showToast('📊 ' + days + '日分を集計しました（月〜' + ['日','月','火','水','木','金','土'][today.getDay()] + '）');
-}
-
-function saveWeeklyComplete() {
-  var today = new Date();
-  var dow = today.getDay();
-  var mon = new Date(today);
-  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  var pad = function(n) { return String(n).padStart(2,'0'); };
-  var weekKey = 'whs-weekly-' + mon.getFullYear()+'-'+pad(mon.getMonth()+1)+'-'+pad(mon.getDate());
-
-  var getVal = function(id){ var el=document.getElementById(id); return el ? parseFloat(el.value)||0 : 0; };
-  var data = {
-    weekStart: mon.getFullYear()+'-'+pad(mon.getMonth()+1)+'-'+pad(mon.getDate()),
-    kpi1: getVal('w-kpi1'), kpi2: getVal('w-kpi2'), kpi3: getVal('w-kpi3'),
-    kpi4: getVal('w-kpi4'), kpi5: getVal('w-kpi5'), kpi6: getVal('w-kpi6')
-  };
-
-  try {
-    localStorage.setItem(weekKey, JSON.stringify(data));
-    // 3ヶ月以上前のデータを自動削除
-    var cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 90);
-    Object.keys(localStorage).forEach(function(k) {
-      if (k.startsWith('whs-weekly-')) {
-        var d = new Date(k.replace('whs-weekly-',''));
-        if (d < cutoff) localStorage.removeItem(k);
-      }
-    });
-    autoSave();
-    showToast('✅ 週次報告を保存しました（' + data.weekStart + '）');
-  } catch(e) { showToast('⚠️ 保存エラー'); }
-}
-
-function aggregateMonthly() {
-  var today = new Date();
-  var year = today.getFullYear(), month = today.getMonth();
-
-  var weeks=0, findings=0, closed=0, incidents=0, nearMisses=0, training=0, days=0;
-  Object.keys(localStorage).sort().forEach(function(k) {
-    if (!k.startsWith('whs-weekly-')) return;
-    try {
-      var data = JSON.parse(localStorage.getItem(k));
-      var d = new Date(data.weekStart);
-      if (d.getFullYear() !== year || d.getMonth() !== month) return;
-      weeks++;
-      days      += data.kpi1 || 0;
-      findings  += data.kpi2 || 0;
-      closed    += data.kpi3 || 0;
-      incidents += data.kpi4 || 0;
-      nearMisses+= data.kpi5 || 0;
-      training  += data.kpi6 || 0;
-    } catch(e) {}
-  });
-
-  if (weeks === 0) { showToast('⚠️ 今月の週次データがまだありません'); return; }
-
-  // 今月の稼働日数（月〜金のみカウント）
-  var workDays = 0;
-  var d = new Date(year, month, 1);
-  while (d.getMonth() === month) {
-    var dw = d.getDay();
-    if (dw >= 1 && dw <= 5) workDays++;
-    d.setDate(d.getDate() + 1);
-  }
-  var compRate = workDays > 0 ? Math.min(Math.round(days / workDays * 100), 100) : 0;
-  var closeRate = findings > 0 ? Math.round(closed / findings * 100) : 0;
-
-  var set = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
-  set('m-kpi1', compRate);
-  set('m-kpi2', findings);
-  set('m-kpi3', closeRate);
-  set('m-kpi5', incidents);
-  set('m-kpi6', nearMisses);
-  autoSave();
-  showToast('📊 ' + weeks + '週分を集計しました');
-}
-
-// ===== INIT =====
-var restored = autoRestore();
-if (!restored) {
-  addRow('incident-body',   incidentRowTemplate);
-  addRow('escalation-body', escalationRowTemplate);
-  setDefaults();
-}
-var debouncedSave = debounce(autoSave, 800);
-document.addEventListener('input',  debouncedSave);
-
-// NGラジオボタンの変更を検知
-document.querySelectorAll('input[type="radio"][name^="st-"]').forEach(function(radio) {
-  radio.addEventListener('change', function() { onNgChange(this.name, this.value); });
-});
-document.addEventListener('change', debouncedSave);
-document.querySelectorAll('.data-table').forEach(function(t) {
-  var w = document.createElement('div'); w.className='table-scroll';
-  t.parentNode.insertBefore(w,t); w.appendChild(t);
-});
-if (restored) showToast('🔄 入力内容を復元しました / Data restored');
-</script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Inspection Check List | AMZL JP WHS</title>
+  <style>
+    :root {
+      --primary: #1a6fb5;
+      --primary-dark: #0f4d82;
+      --ok: #2e7d32;
+      --ng: #c62828;
+      --na: #757575;
+      --border: #ddd;
+      --bg: #f0f4f8;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: var(--bg);
+      color: #333;
+      font-size: 14px;
+    }
+    .app-header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .app-header h1 { font-size: 20px; font-weight: 700; }
+    .app-header p { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+    .tabs {
+      display: flex;
+      background: var(--primary-dark);
+      padding: 0 24px;
+    }
+    .tab-btn {
+      padding: 12px 24px;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .tab-btn:hover { color: white; }
+    .tab-btn.active { color: white; border-bottom-color: #FFD700; }
+    .content { max-width: 980px; margin: 24px auto; padding: 0 20px; }
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--primary);
+    }
+    .section-title span { font-size: 11px; font-weight: 400; color: #aaa; margin-left: 8px; }
+    .form-row { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+    .form-group { flex: 1; min-width: 180px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .form-group label .en { font-weight: 400; color: #bbb; margin-left: 4px; text-transform: none; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 8px 11px; border: 1px solid var(--border);
+      border-radius: 5px; font-size: 13px; font-family: inherit; color: #333;
+    }
+    .form-group textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,111,181,0.15);
+    }
+    /* Checklist */
+    .checklist-table { width: 100%; border-collapse: collapse; }
+    .checklist-table th {
+      background: #f0f4f8; padding: 9px 12px; text-align: left;
+      font-size: 11px; font-weight: 700; border: 1px solid var(--border);
+      color: #555; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .checklist-table td { padding: 10px 12px; border: 1px solid var(--border); vertical-align: middle; }
+    .checklist-table tr:nth-child(even) td { background: #fafbfc; }
+    .item-name { font-weight: 600; font-size: 13px; }
+    .item-name-en { font-size: 11px; color: #555; margin-top: 2px; }
+    .status-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .status-btn input[type="radio"] { display: none; }
+    .status-label {
+      padding: 4px 11px; border-radius: 4px; font-size: 12px; font-weight: 700;
+      border: 2px solid; cursor: pointer; transition: all 0.15s; display: inline-block;
+    }
+    .status-ok .status-label { border-color: #a5d6a7; color: #2e7d32; background: #f1f8f1; }
+    .status-ng .status-label { border-color: #ef9a9a; color: #c62828; background: #fff5f5; }
+    .status-na .status-label { border-color: #e0e0e0; color: #9e9e9e; background: #f5f5f5; }
+    input[type="radio"]:checked + .ok-label  { background: #2e7d32; color: white; border-color: #2e7d32; }
+    input[type="radio"]:checked + .ng-label  { background: #c62828; color: white; border-color: #c62828; }
+    input[type="radio"]:checked + .na-label  { background: #9e9e9e; color: white; border-color: #9e9e9e; }
+    .photo-area { display: flex; flex-direction: row; align-items: center; gap: 6px; flex-wrap: nowrap; }
+    .photo-file-input {
+      display: block; width: auto; max-width: 120px; padding: 4px 6px;
+      font-size: 10px; color: #888; background: #fff;
+      border: 1.5px dashed #bbb; border-radius: 5px;
+      cursor: pointer; box-sizing: border-box; flex-shrink: 0;
+    }
+    .photo-upload-label:hover { border-color: var(--primary); color: var(--primary); }
+    .photo-preview { display: none; }
+    .pht { pointer-events: none; }
+    .photo-file-input.photo-done {
+      border: 2px solid #2e7d32 !important;
+      color: #2e7d32; background: #f1f8f1;
+    }
+    
+    /* #photo-page is always visible — it lives inside panel-daily */
+    /* photo-page-title replaced by section-title */
+    .photo-section-title {
+      font-size: 13px; font-weight: 700; color: #555;
+      margin: 16px 0 10px; padding: 6px 10px;
+      background: #f0f4f8; border-radius: 4px;
+    }
+    .photo-empty-msg {
+      color: #aaa; font-size: 13px; text-align: center;
+      padding: 24px 0; line-height: 1.8;
+    }
+    /* Photo page: 1 row = 2 cells side-by-side */
+    .photo-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    }
+    .photo-item {
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px; background: #fafbfc;
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    .photo-item-label {
+      font-size: 11px; font-weight: 700; color: #444;
+      margin-bottom: 8px; line-height: 1.5;
+      border-bottom: 1px solid #e8e8e8; padding-bottom: 6px;
+    }
+    .photo-item-label .en-sub {
+      font-weight: 400; color: #888; display: block; font-size: 10px;
+    }
+    .photo-cell img {
+      width: 100%; max-height: 200px; object-fit: contain;
+      border-radius: 4px; border: 1px solid #eee;
+    }
+    .photo-na {
+      color: #bbb; font-size: 12px; font-style: italic;
+      padding: 24px 0; text-align: center;
+      border: 1px dashed #ddd; border-radius: 4px;
+      background: #fafafa;
+    }
+    .photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .photo-pair-label {
+      font-size: 10px; font-weight: 700; margin-bottom: 4px;
+    }
+    .remark-input {
+      width: 100%; border: 1px solid #bbb; padding: 6px 10px;
+      font-size: 12px; border-radius: 4px; font-family: inherit;
+      background: #fafcff; color: #333;
+    }
+    .remark-input:focus { outline: none; border-color: var(--primary); }
+    /* Incident table */
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+    .data-table th {
+      background: #f0f4f8; padding: 8px 10px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--border); color: #555; text-transform: uppercase;
+    }
+    .data-table td { border: 1px solid var(--border); padding: 0; }
+    .data-table td input, .data-table td select {
+      width: 100%; border: none; padding: 7px 9px; font-size: 12px;
+      background: transparent; font-family: inherit; color: #333;
+    }
+    .data-table td input:focus, .data-table td select:focus { outline: 1px solid var(--primary); background: #f0f7ff; }
+    /* KPI grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+    .kpi-card { border: 1px solid var(--border); border-radius: 7px; padding: 14px; text-align: center; background: #fafbfc; }
+    .kpi-card label { display: block; font-size: 10px; font-weight: 700; color: #888; margin-bottom: 10px; line-height: 1.4; text-transform: uppercase; }
+    .kpi-card input {
+      width: 100%; text-align: center; font-size: 28px; font-weight: 800;
+      color: var(--primary); border: none; border-bottom: 2px solid var(--border);
+      padding: 2px 4px; background: transparent; font-family: inherit;
+    }
+    .kpi-card input:focus { outline: none; border-bottom-color: var(--primary); }
+    .kpi-card .unit { font-size: 10px; color: #bbb; margin-top: 5px; }
+    /* Buttons */
+    .btn-row { display: flex; gap: 12px; justify-content: flex-end; margin: 20px 0 8px; }
+    .btn {
+      padding: 10px 22px; border: none; border-radius: 5px; cursor: pointer;
+      font-size: 13px; font-weight: 700; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-secondary { background: white; color: var(--primary); border: 2px solid var(--primary); }
+    .btn-secondary:hover { background: #f0f4f8; }
+    .btn-clear { background: white; color: #aaa; border: 2px solid #ddd; }
+    .btn-clear:hover { background: #fff5f5; color: #c62828; border-color: #ffcdd2; }
+    .add-row-btn {
+      font-size: 12px; color: var(--primary); cursor: pointer; border: none;
+      background: none; padding: 5px 0; text-decoration: none; font-family: inherit;
+      font-weight: 600; display: flex; align-items: center; gap: 4px;
+    }
+    .add-row-btn:hover { text-decoration: underline; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: #323232; color: white;
+      padding: 12px 20px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      opacity: 0; transform: translateY(8px); transition: all 0.3s; pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ===== PRINT STYLES ===== */
+    /* ===== MOBILE RESPONSIVE ===== */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    @media (max-width: 640px) {
+      .app-header { padding: 12px 16px; }
+      .app-header h1 { font-size: 15px; }
+      .app-header p { font-size: 10px; }
+
+      .tabs { padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab-btn { padding: 11px 14px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+
+      .content { margin: 12px auto; padding: 0 10px; }
+      .section { padding: 14px 12px; margin-bottom: 10px; }
+      .section-title { font-size: 13px; }
+
+      .form-row { flex-direction: column; gap: 10px; }
+      .form-group { min-width: 0 !important; }
+
+      /* Checklist → card layout */
+      .checklist-table thead { display: none; }
+      .checklist-table,
+      .checklist-table tbody,
+      .checklist-table tr,
+      .checklist-table td { display: block; width: 100%; }
+      .checklist-table tr {
+        border: 1px solid var(--border); border-radius: 8px;
+        margin-bottom: 10px; padding: 12px; background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      }
+      .checklist-table tr:nth-child(even) td { background: transparent; }
+      .checklist-table td { border: none; padding: 3px 0; }
+      .checklist-table td:first-child { display: none; }
+
+      .item-name { font-size: 14px; }
+      .item-name-en { font-size: 12px; color: #444; }
+
+      .status-group { gap: 10px; margin: 10px 0 6px; }
+      .status-label { padding: 9px 18px; font-size: 14px; }
+
+      .remark-input { font-size: 14px; padding: 8px; }
+
+      .photo-area { flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+      .photo-upload-label { padding: 9px 14px; font-size: 13px; }
+
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .kpi-card { padding: 12px 8px; }
+      .kpi-card label { font-size: 9px; }
+      .kpi-card input { font-size: 22px; }
+
+      .btn-row { flex-direction: column; gap: 10px; }
+      .btn { width: 100%; padding: 15px; font-size: 15px; text-align: center; }
+      .add-row-btn { padding: 10px 0; font-size: 14px; }
+
+      .toast { bottom: 16px; right: 12px; left: 12px; text-align: center; }
+
+      /* Section overflow fix */
+      .section { overflow: hidden; }
+
+      /* Data tables → card layout on mobile */
+      .table-scroll { overflow: visible; }
+      .data-table thead { display: none; }
+      .data-table,
+      .data-table tbody,
+      .data-table tr,
+      .data-table td { display: block; width: 100%; box-sizing: border-box; }
+      .data-table tr {
+        border: 1px solid var(--border); border-radius: 8px;
+        margin-bottom: 12px; padding: 10px 12px; background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      }
+      .data-table td {
+        border: none; border-bottom: 1px solid #f0f0f0;
+        padding: 7px 0; min-height: 0;
+      }
+      .data-table td:last-child { border-bottom: none; }
+      .data-table td:first-child { display: none; }
+      .data-table td input,
+      .data-table td select { font-size: 14px; padding: 6px 4px; width: 100%; }
+      /* BAD / GOOD colored areas */
+      .data-table td[style*="#fff8f8"] {
+        background: #fff0f0 !important; border-radius: 6px; padding: 8px !important; margin-bottom: 4px;
+      }
+      .data-table td[style*="#f6fff6"] {
+        background: #f0fff0 !important; border-radius: 6px; padding: 8px !important;
+      }
+      .data-table td[style*="#fff8f8"]::before {
+        content: "🔴 BAD（指摘内容）";
+        display: block; font-size: 11px; font-weight: 700; color: #c62828; margin-bottom: 4px;
+      }
+      .data-table td[style*="#f6fff6"]::before {
+        content: "🟢 GOOD（是正後）";
+        display: block; font-size: 11px; font-weight: 700; color: #2e7d32; margin-bottom: 4px;
+      }
+    }
+
+    @media print {
+      body { background: white; font-size: 12px; }
+      .app-header { background: var(--primary) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tabs, .btn-row, .add-row-btn { display: none !important; }
+      .content { margin: 0; padding: 0; max-width: 100%; }
+      .section { box-shadow: none; page-break-inside: avoid; border: 1px solid #eee; }
+      .photo-preview { display: none !important; }
+      .photo-upload-label { display: none !important; }
+      /* 印刷時: アップロードボタン非表示・サムネイル表示 */
+      .photo-file-input { display: none !important; }
+      .photo-thumb { display: block !important; width: 48px !important; height: 48px !important; margin: 0 !important; }
+      /* チェックリストは新カードレイアウトで対応 */
+      .tab-panel { display: none !important; }
+      .tab-panel.active { display: block !important; }
+      .checklist-table th, .data-table th, .kpi-card {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      input, select, textarea {
+        border: none !important; border-bottom: 1px solid #ccc !important;
+        background: transparent !important;
+      }
+      .kpi-card input { border-bottom: 1px solid #ccc !important; }
+      .status-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* ===== 5ページ構成 カードレイアウト ===== */
+
+      /* チェックリストsectionはページまたぎOK */
+      #checklist-section { page-break-inside: auto !important; }
+      .checklist-table { display: block !important; }
+      .checklist-table thead { display: none !important; }
+
+      /* Page1: 行1-3 を横3列カード */
+      #cb-p1 {
+        display: flex !important;
+        flex-direction: row;
+        gap: 6px;
+        page-break-after: always;
+        break-after: always;
+      }
+      #cb-p1 tr { flex: 1 1 0; }
+
+      /* Page2: 行4-6が左列、行7-9が右列（CSS Gridで明示配置） */
+      #cb-p2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, auto);
+        gap: 6px;
+      }
+      #cb-p2 tr:nth-child(1) { grid-column: 1; grid-row: 1; }
+      #cb-p2 tr:nth-child(2) { grid-column: 1; grid-row: 2; }
+      #cb-p2 tr:nth-child(3) { grid-column: 1; grid-row: 3; }
+      #cb-p2 tr:nth-child(4) { grid-column: 2; grid-row: 1; }
+      #cb-p2 tr:nth-child(5) { grid-column: 2; grid-row: 2; }
+      #cb-p2 tr:nth-child(6) { grid-column: 2; grid-row: 3; }
+
+      /* 各行をカード表示 */
+      .checklist-table tbody tr {
+        display: flex !important;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 8px;
+        box-sizing: border-box;
+        break-inside: avoid;
+      }
+      .checklist-table tbody tr td {
+        display: block !important;
+        border: none !important;
+        padding: 2px 0 !important;
+        width: 100% !important;
+      }
+      .checklist-table tbody tr td:first-child { display: none !important; }
+
+      /* Page3: 指摘事項 / Page4: 総評 */
+      #findings-section { page-break-before: always; break-before: always; }
+      #comment-section { page-break-before: always; break-before: always; }
+
+      /* Page5: 写真記録 3x3（全9枚1ページ）*/
+      .photo-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px !important;
+      }
+      .photo-item { break-inside: avoid; page-break-inside: avoid; max-height: none !important; }
+      #photo-page {
+        display: block !important;
+        page-break-before: always;
+        page-break-inside: auto !important;
+        box-shadow: none !important;
+        border: 1px solid #eee !important;
+      }
+      /* 写真記録セルの動的img（.pciを置換したもの）も確実に印刷 */
+      .photo-cell img {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 140px !important;
+        height: auto !important;
+        object-fit: contain !important;
+        margin: 4px auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .photo-empty-msg { display: none !important; }
+      .photo-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .photo-item { break-inside: avoid; page-break-inside: avoid; }
+      .photo-has-image { border-color: #2e7d32 !important; background: #f1f8f1 !important; }
+
+      /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
+      img[data-ng-photo],
+      img[data-good-photo],
+      img[data-bad-photo],
+      .finding-photo {
+        display: block !important;
+        max-width: 200px !important;
+        max-height: 150px !important;
+        width: auto !important;
+        height: auto !important;
+        margin: 6px auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      /* finding-photo: 非表示スロットはプリントでも非表示 */
+      .finding-photo[style*='display:none'] { display: none !important; }
+      .pci, .pci.loaded {
+        display: block !important;
+        max-width: 240px !important;
+        max-height: 180px !important;
+        width: auto !important;
+        height: auto !important;
+        margin: 4px auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  
+    .photo-thumb {
+      display: none; width: 56px; height: 56px;
+      object-fit: cover; border-radius: 4px; margin-top: 0;
+      border: 1.5px solid #2e7d32; cursor: pointer; flex-shrink: 0;
+    }
+  
+    /* Photo record images: hidden until photo uploaded */
+    .pci { display: none; }
+    .pci.loaded { display: block !important; }
+  </style>
+</head>
+<body>
+
+<div class="app-header">
+  <div>
+    <h1>🦺 Daily Inspection Check List</h1>
+    <p>WHS Report System &nbsp;|&nbsp; AMZL JP WHS &nbsp;—&nbsp; DKJ4-DS (Yotsukaido, JPN)</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('daily', this)">📋 日次点検 / Daily Inspection</button>
+  <button class="tab-btn" onclick="switchTab('weekly', this)">📊 週次報告 / Weekly Report</button>
+  <button class="tab-btn" onclick="switchTab('monthly', this)">📈 月次報告 / Monthly Report</button>
+</div>
+
+<div class="content">
+
+  <!-- ===== DAILY INSPECTION ===== -->
+  <div class="tab-panel active" id="panel-daily">
+
+    <div class="section">
+      <div class="section-title">基本情報 <span>Basic Information</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>点検日時 <span class="en">Date &amp; Time</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="d-date" style="flex:1;min-width:0">
+            <input type="time" id="d-time" style="flex:1;min-width:0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>天候 <span class="en">Weather</span></label>
+          <select id="d-weather">
+            <option>晴れ / Sunny</option>
+            <option>曇り / Cloudy</option>
+            <option>雨 / Rainy</option>
+            <option>雪 / Snowy</option>
+            <option>強風 / Windy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>点検エリア <span class="en">Area</span></label>
+          <select id="d-area">
+            <option>全エリア / Entire Facility</option>
+            <option>屋内 / Indoor (UTR)</option>
+            <option>屋外 / Outdoor (OTR)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>サイト <span class="en">Site</span></label>
+          <input type="text" id="d-site" value="DKJ4-DS (Yotsukaido, JPN)">
+        </div>
+        <div class="form-group">
+          <label>点検者 <span class="en">Inspector</span></label>
+          <input type="text" id="d-inspector" value="Koki Nishida (konnki)">
+        </div>
+
+      </div>
+    </div>
+
+    <div class="section" id="checklist-section">
+      <div class="section-title">安全点検チェックリスト <span>Safety Inspection Checklist</span></div>
+      <table class="checklist-table">
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th style="width:230px">点検項目 / Inspection Item</th>
+            <th style="width:190px">結果 / Result</th>
+            <th>所見・備考 / Remarks</th>
+            <th style="width:130px">📷 写真 / Photo</th>
+          </tr>
+        </thead>
+        <tbody id="cb-p1">
+          <!-- 1 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">1</td>
+            <td><div class="item-name">避難経路・非常口</div><div class="item-name-en">Emergency Exits &amp; Evacuation Routes</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-exit" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-exit" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-exit" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-exit" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-exit" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 2 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">2</td>
+            <td><div class="item-name">消火設備（消火器・スプリンクラー）</div><div class="item-name-en">Fire Suppression Equipment</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-fire" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-fire" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-fire" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-fire" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-fire" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 3 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">3</td>
+            <td><div class="item-name">救急用品（AED・救急箱）</div><div class="item-name-en">First Aid Equipment (AED, First Aid Kit)</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-firstaid" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-firstaid" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-firstaid" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-firstaid" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-firstaid" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+        </tbody>
+        <tbody id="cb-p2">
+          <!-- 4 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">4</td>
+            <td><div class="item-name">歩行帯を妨げる障害物はないか？</div><div class="item-name-en">Any obstacles blocking the pedestrian walkway?</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-walkway" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-walkway" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-walkway" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-walkway" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-walkway" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 5 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">5</td>
+            <td><div class="item-name">作業エリア（Induction / Stow / Staging）に異常はないか？</div><div class="item-name-en">Any abnormalities in work areas (Induction / Stow / Staging)?</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-workarea" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-workarea" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-workarea" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-workarea" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-workarea" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 6 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">6</td>
+            <td><div class="item-name">整理整頓・清潔（5S）</div><div class="item-name-en">Housekeeping &amp; 5S</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-fivs" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-fivs" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-fivs" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-fivs" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-fivs" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 7 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">7</td>
+            <td><div class="item-name">安全標識・掲示物（破損していないか？）</div><div class="item-name-en">Safety Signs &amp; Postings (Any Damage?)</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-signage" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-signage" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-signage" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-signage" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-signage" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 8 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">8</td>
+            <td><div class="item-name">PPE（個人防護具）着用状況</div><div class="item-name-en">PPE (Personal Protective Equipment) Usage</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-ppe" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-ppe" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-ppe" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-ppe" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-ppe" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 9 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">9</td>
+            <td><div class="item-name">緊急連絡体制・掲示</div><div class="item-name-en">Emergency Contact System &amp; Posting</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-emergency" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-emergency" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-emergency" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-emergency" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-emergency" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section" id="findings-section">
+      <div class="section-title">指摘事項・是正措置 <span>Findings &amp; Corrective Actions</span></div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:28px">#</th>
+            <th style="width:120px">場所 / Location</th>
+            <th>🔴 BAD（指摘内容 / Finding）</th>
+            <th>🟢 GOOD（是正後 / After Correction）</th>
+            <th style="width:120px">担当者 / Assignee</th>
+            <th style="width:110px">ステータス / Status</th>
+          </tr>
+        </thead>
+        <tbody id="findings-body"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addRow('findings-body', findingRowTemplate)">＋ 行を追加 / Add Row</button>
+    </div>
+
+    <div class="section" id="comment-section">
+      <div class="section-title">総評・特記事項 <span>Overall Comment</span></div>
+      <div class="form-group">
+        <textarea id="d-comment" placeholder="総評・特記事項を記入してください&#10;Enter overall comments and special notes..."></textarea>
+      </div>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>点検者サイン / Inspector Signature</label>
+          <input type="text" id="d-sign" value="Koki Nishida">
+        </div>
+        <div class="form-group" style="flex:2"></div>
+      </div>
+    </div>
+
+    <!-- ===== PHOTO RECORD SECTION ===== -->
+    <div id="photo-page" class="section">
+      <div class="section-title">📷 写真記録 <span>Photo Evidence</span></div>
+      <div class="photo-section-title">チェックリスト写真 / Checklist Photos</div>
+      <div class="photo-grid" id="photo-grid-checklist">
+        <div class="photo-item"><div class="photo-item-label">1. 避難経路・非常口<span class="en-sub">Emergency Exits &amp; Evacuation Routes</span></div><div class="photo-cell" id="pc-exit"><img id="pci-exit" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-exit">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">2. 消火設備（消火器・スプリンクラー）<span class="en-sub">Fire Suppression Equipment</span></div><div class="photo-cell" id="pc-fire"><img id="pci-fire" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-fire">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">3. 救急用品（AED・救急箱）<span class="en-sub">First Aid Equipment</span></div><div class="photo-cell" id="pc-firstaid"><img id="pci-firstaid" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-firstaid">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">4. 歩行帯を妨げる障害物はないか？<span class="en-sub">Obstacles Blocking Walkway?</span></div><div class="photo-cell" id="pc-walkway"><img id="pci-walkway" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-walkway">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">5. 作業エリアに異常はないか？<span class="en-sub">Abnormalities in Work Areas?</span></div><div class="photo-cell" id="pc-workarea"><img id="pci-workarea" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-workarea">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">6. 整理整頓・清潔（5S）<span class="en-sub">Housekeeping &amp; 5S</span></div><div class="photo-cell" id="pc-fivs"><img id="pci-fivs" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-fivs">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">7. 安全標識・掲示物<span class="en-sub">Safety Signs &amp; Postings</span></div><div class="photo-cell" id="pc-signage"><img id="pci-signage" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-signage">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">8. PPE（個人防護具）着用状況<span class="en-sub">PPE Usage</span></div><div class="photo-cell" id="pc-ppe"><img id="pci-ppe" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-ppe">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">9. 緊急連絡体制・掲示<span class="en-sub">Emergency Contact System</span></div><div class="photo-cell" id="pc-emergency"><img id="pci-emergency" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-emergency">Not available</div></div></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
+      <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
+      <button class="btn btn-secondary" onclick="saveDailyComplete()" style="background:#2e7d32;color:white;border-color:#2e7d32;">✅ 日次完了・保存</button>
+      <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
+    </div>
+  </div>
+
+  <!-- ===== WEEKLY REPORT ===== -->
+  <div class="tab-panel" id="panel-weekly">
+
+    <div class="section">
+      <div class="section-title">基本情報 <span>Basic Information</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>報告期間（開始）<span class="en">Period From</span></label>
+          <input type="date" id="w-from">
+        </div>
+        <div class="form-group">
+          <label>報告期間（終了）<span class="en">Period To</span></label>
+          <input type="date" id="w-to">
+        </div>
+        <div class="form-group">
+          <label>提出日 <span class="en">Submission Date</span></label>
+          <input type="date" id="w-submit">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>報告者 <span class="en">Reported By</span></label>
+          <input type="text" id="w-reporter" value="Koki Nishida (konnki)">
+        </div>
+        <div class="form-group">
+          <label>サイト <span class="en">Site</span></label>
+          <input type="text" id="w-site" value="DKJ4-DS (Yotsukaido, JPN)">
+        </div>
+        <div class="form-group">
+          <label>上長 <span class="en">Manager</span></label>
+          <input type="text" id="w-manager" value="yasuyamt">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">週次指標 <span>Weekly KPIs</span></div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <label>日次点検実施日数<br>Inspections Conducted</label>
+          <input type="number" id="w-kpi1" value="5" min="0" max="7">
+          <div class="unit">日 / days</div>
+        </div>
+        <div class="kpi-card">
+          <label>指摘件数<br>Findings Identified</label>
+          <input type="number" id="w-kpi2" value="0" min="0">
+          <div class="unit">件 / items</div>
+        </div>
+        <div class="kpi-card">
+          <label>是正完了件数<br>Findings Closed</label>
+          <input type="number" id="w-kpi3" value="0" min="0">
+          <div class="unit">件 / items</div>
+        </div>
+        <div class="kpi-card">
+          <label>インシデント件数<br>Incidents</label>
+          <input type="number" id="w-kpi4" value="0" min="0">
+          <div class="unit">件 / cases</div>
+        </div>
+        <div class="kpi-card">
+          <label>ヒヤリハット件数<br>Near Misses</label>
+          <input type="number" id="w-kpi5" value="0" min="0">
+          <div class="unit">件 / cases</div>
+        </div>
+        <div class="kpi-card">
+          <label>安全教育実施回数<br>Safety Trainings</label>
+          <input type="number" id="w-kpi6" value="0" min="0">
+          <div class="unit">回 / sessions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">繰り返し指摘事項（エスカレーション）<span>Recurring Findings — Escalated from Daily Checks</span></div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:28px">#</th>
+            <th>指摘内容 / Finding</th>
+            <th style="width:90px">指摘回数 / Times</th>
+            <th style="width:110px">優先度 / Priority</th>
+            <th style="width:120px">是正期限 / Due</th>
+            <th style="width:130px">担当者 / Assignee</th>
+            <th style="width:130px">ステータス / Status</th>
+          </tr>
+        </thead>
+        <tbody id="escalation-body"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addRow('escalation-body', escalationRowTemplate)">＋ 行を追加 / Add Row</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">インシデント・ヒヤリハット詳細 <span>Incident / Near Miss Details</span></div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:28px">#</th>
+            <th style="width:120px">発生日 / Date</th>
+            <th style="width:140px">種別 / Type</th>
+            <th>概要 / Description</th>
+            <th style="width:140px">対応状況 / Status</th>
+          </tr>
+        </thead>
+        <tbody id="incident-body"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addRow('incident-body', incidentRowTemplate)">＋ 行を追加 / Add Row</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">今週の主な活動 <span>Key Activities This Week</span></div>
+      <div class="form-group">
+        <textarea id="w-activities" placeholder="今週実施した主な安全活動・取り組みを記載してください&#10;Describe key safety activities conducted this week..."></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">未解決事項・継続対応 <span>Open Items & Follow-ups</span></div>
+      <div class="form-group">
+        <textarea id="w-openitems" placeholder="未解決の指摘事項や継続対応中の内容&#10;List open findings and ongoing action items..."></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">来週の予定 <span>Next Week Plan</span></div>
+      <div class="form-group">
+        <textarea id="w-nextplan" placeholder="来週予定している安全活動・重点取り組み&#10;Planned safety activities for next week..."></textarea>
+      </div>
+    </div>
+
+    <div class="section" id="comment-section">
+      <div class="section-title">総評・特記事項 <span>Overall Comments</span></div>
+      <div class="form-group">
+        <textarea id="w-comment" placeholder="総評や特記事項&#10;Overall comments and special notes..."></textarea>
+      </div>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>報告者サイン / Reporter Signature</label>
+          <input type="text" id="w-sign" value="Koki Nishida">
+        </div>
+        <div class="form-group" style="flex:2"></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
+      <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
+      <button class="btn btn-secondary" onclick="aggregateWeekly()" style="background:#1565c0;color:white;border-color:#1565c0;">📊 日次から集計</button>
+      <button class="btn btn-secondary" onclick="saveWeeklyComplete()" style="background:#2e7d32;color:white;border-color:#2e7d32;">✅ 週次完了・保存</button>
+      <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
+    </div>
+  </div>
+
+  <!-- ===== MONTHLY REPORT ===== -->
+  <div class="tab-panel" id="panel-monthly">
+
+    <div class="section">
+      <div class="section-title">基本情報 <span>Basic Information</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>対象年月 <span class="en">Report Month</span></label>
+          <input type="month" id="m-month">
+        </div>
+        <div class="form-group">
+          <label>提出日 <span class="en">Submission Date</span></label>
+          <input type="date" id="m-submit">
+        </div>
+        <div class="form-group">
+          <label>報告者 <span class="en">Reported By</span></label>
+          <input type="text" id="m-reporter" value="Koki Nishida (konnki)">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>サイト <span class="en">Site</span></label>
+          <input type="text" id="m-site" value="DKJ4-DS (Yotsukaido, JPN)">
+        </div>
+        <div class="form-group">
+          <label>上長 <span class="en">Manager</span></label>
+          <input type="text" id="m-manager" value="yasuyamt">
+        </div>
+        <div class="form-group" style="flex:1"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">月次指標 <span>Monthly KPIs</span></div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <label>点検実施率<br>Inspection Completion Rate</label>
+          <input type="number" id="m-kpi1" value="100" min="0" max="100">
+          <div class="unit">% / percent</div>
+        </div>
+        <div class="kpi-card">
+          <label>総指摘件数<br>Total Findings</label>
+          <input type="number" id="m-kpi2" value="0" min="0">
+          <div class="unit">件 / items</div>
+        </div>
+        <div class="kpi-card">
+          <label>是正完了率<br>Closure Rate</label>
+          <input type="number" id="m-kpi3" value="0" min="0" max="100">
+          <div class="unit">% / percent</div>
+        </div>
+        <div class="kpi-card">
+          <label>TRIR<br>Total Recordable Incident Rate</label>
+          <input type="number" id="m-kpi4" value="0.00" step="0.01" min="0">
+          <div class="unit">rate</div>
+        </div>
+        <div class="kpi-card">
+          <label>インシデント件数<br>Total Incidents</label>
+          <input type="number" id="m-kpi5" value="0" min="0">
+          <div class="unit">件 / cases</div>
+        </div>
+        <div class="kpi-card">
+          <label>ヒヤリハット件数<br>Near Misses</label>
+          <input type="number" id="m-kpi6" value="0" min="0">
+          <div class="unit">件 / cases</div>
+        </div>
+        <div class="kpi-card">
+          <label>安全教育参加者数<br>Training Participants</label>
+          <input type="number" id="m-kpi7" value="0" min="0">
+          <div class="unit">人 / people</div>
+        </div>
+        <div class="kpi-card">
+          <label>無災害継続日数<br>Days Without Incident</label>
+          <input type="number" id="m-kpi8" value="0" min="0">
+          <div class="unit">日 / days</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">今月の活動サマリー <span>Monthly Activity Summary</span></div>
+      <div class="form-group">
+        <textarea id="m-summary" placeholder="今月実施した安全活動の概要&#10;Summarize safety activities conducted this month..."></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">主要課題・改善事項 <span>Key Issues & Improvements</span></div>
+      <div class="form-group">
+        <textarea id="m-issues" placeholder="今月の主要な安全課題と対応内容&#10;Major safety issues and corrective actions taken..."></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">来月の重点取り組み <span>Next Month Focus Areas</span></div>
+      <div class="form-group">
+        <textarea id="m-nextplan" placeholder="来月の安全重点取り組みや目標&#10;Safety focus areas and targets for next month..."></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">総評 <span>Overall Comments</span></div>
+      <div class="form-group">
+        <textarea id="m-comment" placeholder="総評・特記事項&#10;Overall comments and special notes..."></textarea>
+      </div>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group">
+          <label>報告者サイン / Reporter Signature</label>
+          <input type="text" id="m-sign" value="Koki Nishida">
+        </div>
+        <div class="form-group" style="flex:2"></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-clear" onclick="clearData()">🗑️ クリア / Clear</button>
+      <button class="btn btn-secondary" onclick="saveDraft()">📁 保存 / Save</button>
+      <button class="btn btn-secondary" onclick="aggregateMonthly()" style="background:#1565c0;color:white;border-color:#1565c0;">📊 週次から集計</button>
+      <button class="btn btn-primary" onclick="printPage()">🖨️ PDF出力 / Export PDF</button>
+    </div>
+  </div>
+
+
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== PHOTO STORE =====
+var photoStore = {};
+
+// ===== PHOTO UPLOAD — onchange直接呼び出し（iOS Safari互換）=====
+// document.addEventListener委譲はiOS Safariのfile inputで発火しないため廃止
+window._photoHandler = function(inp) {
+  if (!inp.files || !inp.files[0]) return;
+
+  // IDから写真キーを取得: fi-exit → exit, fi-fbad1 → fbad1
+  var id = inp.id.replace(/^fi-/, '');
+  var file = inp.files[0];
+
+  // ボタンを完了色に変更（即時）
+  inp.classList.add('photo-done');
+
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var dataUrl = ev.target.result;
+    photoStore[id] = dataUrl;
+
+    // 写真記録セクションの枠に画像を挿入
+    var pc = document.getElementById('pc-' + id);
+    if (pc) {
+      var img = document.createElement('img');
+      img.src = dataUrl;
+      img.className = 'pci loaded';
+      img.style.cssText = 'display:block;width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #2e7d32;';
+      while (pc.firstChild) pc.removeChild(pc.firstChild);
+      pc.appendChild(img);
+    }
+
+    // チェックリスト行のサムネイル
+    var pth = document.getElementById('pth-' + id);
+    if (pth) { pth.src = dataUrl; pth.style.display = 'block'; }
+
+    // カウント更新
+    var n = Object.keys(photoStore).length;
+    var ttl = document.querySelector('#photo-page .section-title');
+    if (ttl) ttl.innerHTML = '📷 写真記録 <span>Photo Evidence (' + n + '件)</span>';
+
+    showToast('📸 写真を記録しました');
+
+    // GOOD写真（fi-fgood{n}）の表示
+    if (/^fgood\d+$/.test(id)) {
+      var goodTd = inp.closest('td');
+      if (goodTd) {
+        var existGoodImg = goodTd.querySelector('img[data-good-photo]');
+        if (existGoodImg) {
+          existGoodImg.src = dataUrl;
+          existGoodImg.style.display = 'block';
+        } else {
+          var goodImg = document.createElement('img');
+          goodImg.src = dataUrl;
+          goodImg.setAttribute('data-good-photo','1');
+          goodImg.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px auto';
+          var goodPhotoAreaEl = goodTd.querySelector('.photo-area');
+          if (goodPhotoAreaEl) goodTd.insertBefore(goodImg, goodPhotoAreaEl);
+          else goodTd.appendChild(goodImg);
+        }
+      }
+    }
+
+    // BAD写真（手動追加 fi-fbad{n}）の表示
+    if (/^fbad\d+$/.test(id)) {
+      var badTdEl = inp.closest('td');
+      if (badTdEl) {
+        var existBadImg = badTdEl.querySelector('img[data-bad-photo]');
+        if (existBadImg) {
+          existBadImg.src = dataUrl;
+          existBadImg.style.display = 'block';
+        } else {
+          var badImgEl = document.createElement('img');
+          badImgEl.src = dataUrl;
+          badImgEl.setAttribute('data-bad-photo','1');
+          badImgEl.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
+          var badPhotoAreaEl2 = badTdEl.querySelector('.photo-area');
+          if (badPhotoAreaEl2) badTdEl.insertBefore(badImgEl, badPhotoAreaEl2);
+          else badTdEl.appendChild(badImgEl);
+        }
+      }
+    }
+
+    // チェックリスト項目の写真なら、NG指摘行のBADにも反映
+    if (/^[a-z]+$/.test(id)) { // fi-exit → exit など（finding番号ではなく項目キー）
+      var ngRow = document.querySelector('tr[data-ng-key="st-' + id + '"]');
+      if (ngRow) {
+        var badTd = ngRow.querySelectorAll('td')[2];
+        if (badTd) {
+          var existNgImg = badTd.querySelector('img[data-ng-photo]');
+          if (existNgImg) {
+            existNgImg.src = dataUrl;
+            existNgImg.style.display = 'block';
+          } else {
+            var ngImg = document.createElement('img');
+            ngImg.src = dataUrl;
+            ngImg.setAttribute('data-ng-photo','1');
+            ngImg.style.cssText = 'display:block;max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
+            var photoAreaEl = badTd.querySelector('.photo-area');
+            if (photoAreaEl) badTd.insertBefore(ngImg, photoAreaEl);
+          }
+        }
+      }
+    }
+  };
+  reader.onerror = function() { showToast('⚠️ 読み込みエラー'); };
+  reader.readAsDataURL(file);
+};
+
+// ===== ADD FINDING PHOTO ROW =====
+function addFindingPhotoRow(num) { /* 削除済み：指摘写真は指摘表内に表示 */ }
+
+// ===== ROW TEMPLATES =====
+var findingCount = 0, incidentCount = 0, escalationCount = 0;
+
+function findingRowTemplate() {
+  findingCount++;
+  var n = findingCount;
+  return '' +
+    '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + n + '</td>' +
+    '<td><input type="text" placeholder="場所 / Location"></td>' +
+    '<td style="background:#fff8f8;vertical-align:top">' +
+      '<input type="text" class="remark-input" placeholder="BAD：問題の内容">' +
+      '<img id="img-fbad' + n + '" class="finding-photo" data-bad-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto" alt="">' +
+      '<div class="photo-area" style="margin-top:8px">' +
+        '<input type="file" id="fi-fbad' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
+      '</div>' +
+    '</td>' +
+    '<td style="background:#f6fff6;vertical-align:top">' +
+      '<input type="text" class="remark-input" placeholder="GOOD：是正後の状況">' +
+      '<img id="img-fgood' + n + '" class="finding-photo" data-good-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto" alt="">' +
+      '<div class="photo-area" style="margin-top:8px">' +
+        '<input type="file" id="fi-fgood' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
+      '</div>' +
+    '</td>' +
+    '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
+    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit">' +
+      '<option>対応中 / In Progress</option><option>完了 / Closed</option>' +
+    '</select></td>';
+}
+
+function escalationRowTemplate() {
+  escalationCount++;
+  return '' +
+    '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + escalationCount + '</td>' +
+    '<td><input type="text" placeholder="指摘内容 / Finding description"></td>' +
+    '<td style="text-align:center"><input type="number" min="2" value="2" style="width:60px;text-align:center;border:none;padding:7px 4px;font-size:14px;font-weight:700;color:#c62828;font-family:inherit"></td>' +
+    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>高 / High</option><option selected>中 / Medium</option><option>低 / Low</option></select></td>' +
+    '<td><input type="date"></td>' +
+    '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
+    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>対応中 / In Progress</option><option>完了 / Closed</option><option>エスカレーション中 / Escalated</option></select></td>';
+}
+
+function incidentRowTemplate() {
+  incidentCount++;
+  return '' +
+    '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + incidentCount + '</td>' +
+    '<td><input type="date"></td>' +
+    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>インシデント / Incident</option><option>ヒヤリハット / Near Miss</option><option>危険予知 / Hazard ID</option></select></td>' +
+    '<td><input type="text" placeholder="概要 / Description"></td>' +
+    '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit"><option>対応中 / In Progress</option><option>完了 / Closed</option><option>エスカレーション中 / Escalated</option></select></td>';
+}
+
+function addRow(tbodyId, templateFn) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  var tr = document.createElement('tr');
+  tr.innerHTML = templateFn();
+  tbody.appendChild(tr);
+  if (tbodyId === 'findings-body') addFindingPhotoRow(findingCount);
+}
+
+// ===== TAB / PRINT / TOAST =====
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b)   { b.classList.remove('active'); });
+  document.getElementById('panel-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+function printPage() {
+  window.print();
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+
+// ===== SAVE / RESTORE =====
+function debounce(fn, ms) { var t; return function(){ clearTimeout(t); t=setTimeout(fn,ms); }; }
+
+function autoSave() {
+  try {
+    var s = { inputs:{}, radios:{}, tbodies:{}, tab:'', counts:{} };
+    document.querySelectorAll('input[id]:not([type=file]):not([type=radio]), textarea[id], select[id]')
+      .forEach(function(el) { s.inputs[el.id] = el.value; });
+    document.querySelectorAll('input[type="radio"]:checked')
+      .forEach(function(el) { s.radios[el.name] = el.value; });
+    ['findings-body','incident-body','escalation-body'].forEach(function(id) {
+      var el = document.getElementById(id); if (!el) return;
+      var clone = el.cloneNode(true);
+      clone.querySelectorAll('input[type="file"]').forEach(function(i) { i.remove(); });
+      s.tbodies[id] = clone.innerHTML;
+    });
+    var active = document.querySelector('.tab-panel.active');
+    if (active) s.tab = active.id;
+    s.counts = { findingCount:findingCount, incidentCount:incidentCount, escalationCount:escalationCount };
+    localStorage.setItem('whs-autosave', JSON.stringify(s));
+  } catch(e) {}
+}
+
+function autoRestore() {
+  try {
+    var raw = localStorage.getItem('whs-autosave');
+    if (!raw) return false;
+    var s = JSON.parse(raw);
+    if (s.counts) {
+      findingCount    = s.counts.findingCount    || 0;
+      incidentCount   = s.counts.incidentCount   || 0;
+      escalationCount = s.counts.escalationCount || 0;
+    }
+    if (s.tbodies) Object.keys(s.tbodies).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && s.tbodies[id]) el.innerHTML = s.tbodies[id];
+    });
+    for (var i = 1; i <= findingCount; i++) addFindingPhotoRow(i);
+    if (s.inputs) Object.keys(s.inputs).forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.value = s.inputs[id];
+    });
+    if (s.radios) Object.keys(s.radios).forEach(function(name) {
+      var el = document.querySelector('input[type="radio"][name="'+name+'"][value="'+s.radios[name]+'"]');
+      if (el) el.checked = true;
+    });
+    if (s.tab) {
+      var idx = ['panel-daily','panel-weekly','panel-monthly'].indexOf(s.tab);
+      if (idx >= 0) {
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(function(b)   { b.classList.remove('active'); });
+        document.getElementById(s.tab).classList.add('active');
+        document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+      }
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearData() {
+  if (confirm('入力データをすべてクリアしますか？\nClear all entered data and start fresh?')) {
+    try { localStorage.removeItem('whs-autosave'); } catch(e) {}
+    photoStore = {};
+    location.reload();
+  }
+}
+function saveDraft() { autoSave(); showToast('✅ 保存しました / Saved!'); }
+
+function setDefaults() {
+  var today = new Date(), pad = function(n){ return String(n).padStart(2,'0'); };
+  var d = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  var set = function(id,v){ var e=document.getElementById(id); if(e) e.value=v; };
+  set('d-date',d); set('d-time',pad(today.getHours())+':'+pad(today.getMinutes()));
+  set('w-submit',d); set('m-submit',d);
+  set('m-month',today.getFullYear()+'-'+pad(today.getMonth()+1));
+  var dow=today.getDay(), mon=new Date(today);
+  mon.setDate(today.getDate()-(dow===0?6:dow-1));
+  var fri=new Date(mon); fri.setDate(mon.getDate()+4);
+  var fmt=function(x){ return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate()); };
+  set('w-from',fmt(mon)); set('w-to',fmt(fri));
+}
+
+
+// ===== NG自動反映 — チェックリストのNG選択で指摘事項に自動追加 =====
+var checklistItems = {
+  'st-exit':      '避難経路・非常口',
+  'st-fire':      '消火設備（消火器・スプリンクラー）',
+  'st-firstaid':  '救急用品（AED・救急箱）',
+  'st-walkway':   '歩行帯を妨げる障害物',
+  'st-workarea':  '作業エリアの異常',
+  'st-fivs':      '整理整頓・清潔（5S）',
+  'st-signage':   '安全標識・掲示物',
+  'st-ppe':       'PPE着用状況',
+  'st-emergency': '緊急連絡体制・掲示'
+};
+
+function onNgChange(radioName, value) {
+  var itemName = checklistItems[radioName];
+  if (!itemName) return;
+  var tbody = document.getElementById('findings-body');
+  if (!tbody) return;
+  var existing = tbody.querySelector('tr[data-ng-key="' + radioName + '"]');
+
+  if (value === 'NG') {
+    if (existing) return;
+
+    // チェックリスト行から備考テキストを取得
+    var radioEl = document.querySelector('input[type="radio"][name="' + radioName + '"][value="NG"]');
+    var remark = '';
+    if (radioEl) {
+      var checkRow = radioEl.closest('tr');
+      if (checkRow) {
+        var remarkEl = checkRow.querySelector('.remark-input');
+        if (remarkEl) remark = remarkEl.value.trim();
+      }
+    }
+
+    // チェックリスト写真を取得
+    var photoKey = radioName.replace('st-', '');
+    var photoData = photoStore[photoKey] || null;
+
+    var badText = itemName + (remark ? '：' + remark : '');
+
+    findingCount++;
+    var n = findingCount;
+    var newTr = document.createElement('tr');
+    newTr.setAttribute('data-ng-key', radioName);
+
+    // BAD列: テキスト入力 + 既存写真（あれば）+ 新規写真アップロード
+    var badTd = document.createElement('td');
+    badTd.style.cssText = 'background:#fff8f8;vertical-align:top';
+    var badInput = document.createElement('input');
+    badInput.type = 'text'; badInput.className = 'remark-input';
+    badInput.placeholder = 'BAD：問題の内容'; badInput.value = badText;
+    badTd.appendChild(badInput);
+    // チェックリスト写真プレースホルダー（常に作成、写真あれば表示）
+    var badImgSlot = document.createElement('img');
+    badImgSlot.className = 'finding-photo';
+    badImgSlot.setAttribute('data-ng-photo','1');
+    badImgSlot.style.cssText = 'max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
+    badImgSlot.alt = '';
+    if (photoData) { badImgSlot.src = photoData; badImgSlot.style.display = 'block'; }
+    else { badImgSlot.style.display = 'none'; }
+    badTd.appendChild(badImgSlot);
+    // 手動BAD写真プレースホルダー
+    var badManualSlot = document.createElement('img');
+    badManualSlot.id = 'img-fbad' + n;
+    badManualSlot.className = 'finding-photo';
+    badManualSlot.setAttribute('data-bad-photo','1');
+    badManualSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
+    badManualSlot.alt = '';
+    badTd.appendChild(badManualSlot);
+    var badPhotoArea = document.createElement('div');
+    badPhotoArea.className = 'photo-area'; badPhotoArea.style.marginTop = '6px';
+    var badFileInput = document.createElement('input');
+    badFileInput.type = 'file'; badFileInput.id = 'fi-fbad' + n;
+    badFileInput.accept = 'image/*'; badFileInput.className = 'photo-file-input';
+    badFileInput.setAttribute('onchange','window._photoHandler(this)');
+    badPhotoArea.appendChild(badFileInput);
+    badTd.appendChild(badPhotoArea);
+
+    // GOOD列: テキスト入力 + 写真アップロード
+    var goodTd = document.createElement('td');
+    goodTd.style.cssText = 'background:#f6fff6;vertical-align:top';
+    var goodInput = document.createElement('input');
+    goodInput.type = 'text'; goodInput.className = 'remark-input';
+    goodInput.placeholder = 'GOOD：是正後の状況';
+    goodTd.appendChild(goodInput);
+    // GOOD写真プレースホルダー（非表示で先に作成）
+    var goodImgSlot = document.createElement('img');
+    goodImgSlot.id = 'img-fgood' + n;
+    goodImgSlot.className = 'finding-photo';
+    goodImgSlot.setAttribute('data-good-photo','1');
+    goodImgSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto';
+    goodImgSlot.alt = '';
+    goodTd.appendChild(goodImgSlot);
+    var goodPhotoArea = document.createElement('div');
+    goodPhotoArea.className = 'photo-area'; goodPhotoArea.style.marginTop = '6px';
+    var goodFileInput = document.createElement('input');
+    goodFileInput.type = 'file'; goodFileInput.id = 'fi-fgood' + n;
+    goodFileInput.accept = 'image/*'; goodFileInput.className = 'photo-file-input';
+    goodFileInput.setAttribute('onchange','window._photoHandler(this)');
+    goodPhotoArea.appendChild(goodFileInput);
+    goodTd.appendChild(goodPhotoArea);
+
+    // 行を組み立て（innerHTML+=を使わずcreateElementで統一）
+    var numTd = document.createElement('td');
+    numTd.style.cssText = 'text-align:center;color:#bbb;font-size:12px;width:28px';
+    numTd.textContent = n;
+    var locTd = document.createElement('td');
+    var locInput = document.createElement('input');
+    locInput.type = 'text'; locInput.placeholder = '場所 / Location'; locInput.value = itemName;
+    locTd.appendChild(locInput);
+    var assigneeTd = document.createElement('td');
+    var assigneeInput = document.createElement('input');
+    assigneeInput.type = 'text'; assigneeInput.placeholder = '担当者 / Assignee';
+    assigneeTd.appendChild(assigneeInput);
+    var statusTd = document.createElement('td');
+    var statusSel = document.createElement('select');
+    statusSel.style.cssText = 'width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit';
+    ['対応中 / In Progress','完了 / Closed'].forEach(function(o){
+      var opt = document.createElement('option'); opt.textContent = o; statusSel.appendChild(opt);
+    });
+    statusTd.appendChild(statusSel);
+    newTr.appendChild(numTd);
+    newTr.appendChild(locTd);
+    newTr.appendChild(badTd);
+    newTr.appendChild(goodTd);
+    newTr.appendChild(assigneeTd);
+    newTr.appendChild(statusTd);
+    tbody.appendChild(newTr);
+    addFindingPhotoRow(n);
+    showToast('⚠️ 指摘事項に自動追加しました');
+
+  } else {
+    if (existing) {
+      var gInput = existing.querySelectorAll('td')[3] && existing.querySelectorAll('td')[3].querySelector('input[type="text"]');
+      var statusSel = existing.querySelector('select');
+      var isEmpty = !gInput || !gInput.value.trim();
+      var isOpen  = !statusSel || statusSel.value === '対応中 / In Progress';
+      if (isEmpty && isOpen) {
+        existing.parentNode.removeChild(existing);
+        showToast('指摘行を削除しました');
+      }
+    }
+  }
+}
+
+
+// ===== 日次完了保存 / 週次・月次自動集計 =====
+
+function saveDailyComplete() {
+  var today = new Date();
+  var pad = function(n) { return String(n).padStart(2,'0'); };
+  var dateStr = today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());
+  var key = 'whs-daily-' + dateStr;
+
+  // NG件数カウント
+  var ngCount = 0;
+  document.querySelectorAll('input[type="radio"][name^="st-"]:checked').forEach(function(r) {
+    if (r.value === 'NG') ngCount++;
+  });
+
+  // 指摘件数・完了件数
+  var findingTotal = 0, findingClosed = 0;
+  document.querySelectorAll('#findings-body tr').forEach(function(tr) {
+    findingTotal++;
+    var sel = tr.querySelector('select');
+    if (sel && sel.value.indexOf('完了') >= 0) findingClosed++;
+  });
+
+  // インシデント・ヒヤリハット
+  var incidentCount = 0, nearMissCount = 0;
+  document.querySelectorAll('#incident-body tr').forEach(function(tr) {
+    var sel = tr.querySelector('select');
+    if (!sel) return;
+    if (sel.value.indexOf('ヒヤリハット') >= 0) nearMissCount++;
+    else incidentCount++;
+  });
+
+  var data = {
+    date: dateStr,
+    ngCount: ngCount,
+    findingTotal: findingTotal,
+    findingClosed: findingClosed,
+    incidentCount: incidentCount,
+    nearMissCount: nearMissCount
+  };
+
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    // 5週間以上前のデータを自動削除
+    var cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 35);
+    Object.keys(localStorage).forEach(function(k) {
+      if (k.startsWith('whs-daily-')) {
+        var d = new Date(k.replace('whs-daily-',''));
+        if (d < cutoff) localStorage.removeItem(k);
+      }
+    });
+    autoSave();
+    showToast('✅ 日次点検を保存しました（' + dateStr + '）');
+  } catch(e) { showToast('⚠️ 保存エラー'); }
+}
+
+function aggregateWeekly() {
+  var today = new Date();
+  var dow = today.getDay();
+  var mon = new Date(today);
+  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  var pad = function(n) { return String(n).padStart(2,'0'); };
+  var fmt = function(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); };
+
+  var days=0, findings=0, closed=0, incidents=0, nearMisses=0;
+  for (var i = 0; i < 5; i++) {
+    var d = new Date(mon); d.setDate(mon.getDate() + i);
+    if (d > today) break;
+    var raw = localStorage.getItem('whs-daily-' + fmt(d));
+    if (!raw) continue;
+    try {
+      var data = JSON.parse(raw);
+      days++;
+      findings  += data.findingTotal  || 0;
+      closed    += data.findingClosed || 0;
+      incidents += data.incidentCount || 0;
+      nearMisses+= data.nearMissCount || 0;
+    } catch(e) {}
+  }
+
+  if (days === 0) { showToast('⚠️ 今週の日次データがまだありません'); return; }
+
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
+  set('w-kpi1', days);
+  set('w-kpi2', findings);
+  set('w-kpi3', closed);
+  set('w-kpi4', incidents);
+  set('w-kpi5', nearMisses);
+  autoSave();
+  showToast('📊 ' + days + '日分を集計しました（月〜' + ['日','月','火','水','木','金','土'][today.getDay()] + '）');
+}
+
+function saveWeeklyComplete() {
+  var today = new Date();
+  var dow = today.getDay();
+  var mon = new Date(today);
+  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  var pad = function(n) { return String(n).padStart(2,'0'); };
+  var weekKey = 'whs-weekly-' + mon.getFullYear()+'-'+pad(mon.getMonth()+1)+'-'+pad(mon.getDate());
+
+  var getVal = function(id){ var el=document.getElementById(id); return el ? parseFloat(el.value)||0 : 0; };
+  var data = {
+    weekStart: mon.getFullYear()+'-'+pad(mon.getMonth()+1)+'-'+pad(mon.getDate()),
+    kpi1: getVal('w-kpi1'), kpi2: getVal('w-kpi2'), kpi3: getVal('w-kpi3'),
+    kpi4: getVal('w-kpi4'), kpi5: getVal('w-kpi5'), kpi6: getVal('w-kpi6')
+  };
+
+  try {
+    localStorage.setItem(weekKey, JSON.stringify(data));
+    // 3ヶ月以上前のデータを自動削除
+    var cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 90);
+    Object.keys(localStorage).forEach(function(k) {
+      if (k.startsWith('whs-weekly-')) {
+        var d = new Date(k.replace('whs-weekly-',''));
+        if (d < cutoff) localStorage.removeItem(k);
+      }
+    });
+    autoSave();
+    showToast('✅ 週次報告を保存しました（' + data.weekStart + '）');
+  } catch(e) { showToast('⚠️ 保存エラー'); }
+}
+
+function aggregateMonthly() {
+  var today = new Date();
+  var year = today.getFullYear(), month = today.getMonth();
+
+  var weeks=0, findings=0, closed=0, incidents=0, nearMisses=0, training=0, days=0;
+  Object.keys(localStorage).sort().forEach(function(k) {
+    if (!k.startsWith('whs-weekly-')) return;
+    try {
+      var data = JSON.parse(localStorage.getItem(k));
+      var d = new Date(data.weekStart);
+      if (d.getFullYear() !== year || d.getMonth() !== month) return;
+      weeks++;
+      days      += data.kpi1 || 0;
+      findings  += data.kpi2 || 0;
+      closed    += data.kpi3 || 0;
+      incidents += data.kpi4 || 0;
+      nearMisses+= data.kpi5 || 0;
+      training  += data.kpi6 || 0;
+    } catch(e) {}
+  });
+
+  if (weeks === 0) { showToast('⚠️ 今月の週次データがまだありません'); return; }
+
+  // 今月の稼働日数（月〜金のみカウント）
+  var workDays = 0;
+  var d = new Date(year, month, 1);
+  while (d.getMonth() === month) {
+    var dw = d.getDay();
+    if (dw >= 1 && dw <= 5) workDays++;
+    d.setDate(d.getDate() + 1);
+  }
+  var compRate = workDays > 0 ? Math.min(Math.round(days / workDays * 100), 100) : 0;
+  var closeRate = findings > 0 ? Math.round(closed / findings * 100) : 0;
+
+  var set = function(id,v){ var el=document.getElementById(id); if(el) el.value=v; };
+  set('m-kpi1', compRate);
+  set('m-kpi2', findings);
+  set('m-kpi3', closeRate);
+  set('m-kpi5', incidents);
+  set('m-kpi6', nearMisses);
+  autoSave();
+  showToast('📊 ' + weeks + '週分を集計しました');
+}
+
+// ===== INIT =====
+var restored = autoRestore();
+if (!restored) {
+  addRow('incident-body',   incidentRowTemplate);
+  addRow('escalation-body', escalationRowTemplate);
+  setDefaults();
+}
+var debouncedSave = debounce(autoSave, 800);
+document.addEventListener('input',  debouncedSave);
+
+// NGラジオボタンの変更を検知
+document.querySelectorAll('input[type="radio"][name^="st-"]').forEach(function(radio) {
+  radio.addEventListener('change', function() { onNgChange(this.name, this.value); });
+});
+document.addEventListener('change', debouncedSave);
+document.querySelectorAll('.data-table').forEach(function(t) {
+  var w = document.createElement('div'); w.className='table-scroll';
+  t.parentNode.insertBefore(w,t); w.appendChild(t);
+});
+if (restored) showToast('🔄 入力内容を復元しました / Data restored');
+</script>
+</body>
+</html>
