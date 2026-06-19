@@ -103,12 +103,12 @@
     input[type="radio"]:checked + .ok-label  { background: #2e7d32; color: white; border-color: #2e7d32; }
     input[type="radio"]:checked + .ng-label  { background: #c62828; color: white; border-color: #c62828; }
     input[type="radio"]:checked + .na-label  { background: #9e9e9e; color: white; border-color: #9e9e9e; }
-    .photo-area { display: flex; flex-direction: row; align-items: center; gap: 6px; flex-wrap: nowrap; }
+    .photo-area { display: flex; flex-direction: column; gap: 6px; }
     .photo-file-input {
-      display: block; width: auto; max-width: 120px; padding: 4px 6px;
-      font-size: 10px; color: #888; background: #fff;
+      display: block; width: 100%; padding: 5px 8px;
+      font-size: 11px; color: #888; background: #fff;
       border: 1.5px dashed #bbb; border-radius: 5px;
-      cursor: pointer; box-sizing: border-box; flex-shrink: 0;
+      cursor: pointer; box-sizing: border-box;
     }
     .photo-upload-label:hover { border-color: var(--primary); color: var(--primary); }
     .photo-preview { display: none; }
@@ -131,7 +131,7 @@
     }
     /* Photo page: 1 row = 2 cells side-by-side */
     .photo-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
     }
     .photo-item {
       border: 1px solid var(--border); border-radius: 6px;
@@ -321,10 +321,6 @@
       .section { box-shadow: none; page-break-inside: avoid; border: 1px solid #eee; }
       .photo-preview { display: none !important; }
       .photo-upload-label { display: none !important; }
-      /* 印刷時: アップロードボタン非表示・サムネイル表示 */
-      .photo-file-input { display: none !important; }
-      .photo-thumb { display: block !important; width: 48px !important; height: 48px !important; margin: 0 !important; }
-      /* チェックリストは新カードレイアウトで対応 */
       .tab-panel { display: none !important; }
       .tab-panel.active { display: block !important; }
       .checklist-table th, .data-table th, .kpi-card {
@@ -337,130 +333,22 @@
       }
       .kpi-card input { border-bottom: 1px solid #ccc !important; }
       .status-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-      /* ===== 5ページ構成 カードレイアウト ===== */
-
-      /* チェックリストsectionはページまたぎOK */
-      #checklist-section { page-break-inside: auto !important; }
-      .checklist-table { display: block !important; }
-      .checklist-table thead { display: none !important; }
-
-      /* Page1: 行1-3 を横3列カード */
-      #cb-p1 {
-        display: flex !important;
-        flex-direction: row;
-        gap: 6px;
-        page-break-after: always;
-        break-after: always;
-      }
-      #cb-p1 tr { flex: 1 1 0; }
-
-      /* Page2: 行4-6が左列、行7-9が右列（CSS Gridで明示配置） */
-      #cb-p2 {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: repeat(3, auto);
-        gap: 6px;
-      }
-      #cb-p2 tr:nth-child(1) { grid-column: 1; grid-row: 1; }
-      #cb-p2 tr:nth-child(2) { grid-column: 1; grid-row: 2; }
-      #cb-p2 tr:nth-child(3) { grid-column: 1; grid-row: 3; }
-      #cb-p2 tr:nth-child(4) { grid-column: 2; grid-row: 1; }
-      #cb-p2 tr:nth-child(5) { grid-column: 2; grid-row: 2; }
-      #cb-p2 tr:nth-child(6) { grid-column: 2; grid-row: 3; }
-
-      /* 各行をカード表示 */
-      .checklist-table tbody tr {
-        display: flex !important;
-        flex-direction: column;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 8px;
-        box-sizing: border-box;
-        break-inside: avoid;
-      }
-      .checklist-table tbody tr td {
-        display: block !important;
-        border: none !important;
-        padding: 2px 0 !important;
-        width: 100% !important;
-      }
-      .checklist-table tbody tr td:first-child { display: none !important; }
-
-      /* Page3: 指摘事項 / Page4: 総評 */
-      #findings-section { page-break-before: always; break-before: always; }
-      #comment-section { page-break-before: always; break-before: always; }
-
-      /* Page5: 写真記録 3x3（全9枚1ページ）*/
-      .photo-grid {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr !important;
-        gap: 6px !important;
-      }
-      .photo-item { break-inside: avoid; page-break-inside: avoid; max-height: none !important; }
       #photo-page {
         display: block !important;
         page-break-before: always;
-        page-break-inside: auto !important;
         box-shadow: none !important;
         border: 1px solid #eee !important;
       }
-      /* 写真記録セルの動的img（.pciを置換したもの）も確実に印刷 */
-      .photo-cell img {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: 140px !important;
-        height: auto !important;
-        object-fit: contain !important;
-        margin: 4px auto !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
       .photo-empty-msg { display: none !important; }
-      .photo-grid {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr !important;
-        gap: 6px !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .photo-grid, .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .photo-item { break-inside: avoid; page-break-inside: avoid; }
       .photo-has-image { border-color: #2e7d32 !important; background: #f1f8f1 !important; }
-
-      /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
-      img[data-ng-photo],
-      img[data-good-photo],
-      img[data-bad-photo],
-      .finding-photo {
-        display: block !important;
-        max-width: 200px !important;
-        max-height: 150px !important;
-        width: auto !important;
-        height: auto !important;
-        margin: 6px auto !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      /* finding-photo: 非表示スロットはプリントでも非表示 */
-      .finding-photo[style*='display:none'] { display: none !important; }
-      .pci, .pci.loaded {
-        display: block !important;
-        max-width: 240px !important;
-        max-height: 180px !important;
-        width: auto !important;
-        height: auto !important;
-        margin: 4px auto !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
     }
   
     .photo-thumb {
-      display: none; width: 56px; height: 56px;
-      object-fit: cover; border-radius: 4px; margin-top: 0;
-      border: 1.5px solid #2e7d32; cursor: pointer; flex-shrink: 0;
+      display: none; width: 64px; height: 64px;
+      object-fit: cover; border-radius: 4px; margin-top: 6px;
+      border: 1.5px solid #2e7d32; cursor: pointer;
     }
   
     /* Photo record images: hidden until photo uploaded */
@@ -530,7 +418,7 @@
       </div>
     </div>
 
-    <div class="section" id="checklist-section">
+    <div class="section">
       <div class="section-title">安全点検チェックリスト <span>Safety Inspection Checklist</span></div>
       <table class="checklist-table">
         <thead>
@@ -542,7 +430,7 @@
             <th style="width:130px">📷 写真 / Photo</th>
           </tr>
         </thead>
-        <tbody id="cb-p1">
+        <tbody id="checklist-body">
           <!-- 1 -->
           <tr>
             <td style="text-align:center;color:#bbb;font-size:12px">1</td>
@@ -582,8 +470,6 @@
             <td><div class="photo-area"><input type="file" id="fi-firstaid" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
 <img id="pth-firstaid" class="photo-thumb" src="" alt="撮影済み"></div></td>
           </tr>
-        </tbody>
-        <tbody id="cb-p2">
           <!-- 4 -->
           <tr>
             <td style="text-align:center;color:#bbb;font-size:12px">4</td>
@@ -652,6 +538,19 @@
           <!-- 9 -->
           <tr>
             <td style="text-align:center;color:#bbb;font-size:12px">9</td>
+            <td><div class="item-name">ロックアウト・タグアウト（LOTO）</div><div class="item-name-en">Lockout / Tagout (LOTO)</div></td>
+            <td><div class="status-group">
+              <label class="status-btn status-ok"><input type="radio" name="st-loto" value="OK"><span class="status-label ok-label">OK</span></label>
+              <label class="status-btn status-ng"><input type="radio" name="st-loto" value="NG"><span class="status-label ng-label">NG</span></label>
+              <label class="status-btn status-na"><input type="radio" name="st-loto" value="N/A"><span class="status-label na-label">N/A</span></label>
+            </div></td>
+            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
+            <td><div class="photo-area"><input type="file" id="fi-loto" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
+<img id="pth-loto" class="photo-thumb" src="" alt="撮影済み"></div></td>
+          </tr>
+          <!-- 10 -->
+          <tr>
+            <td style="text-align:center;color:#bbb;font-size:12px">10</td>
             <td><div class="item-name">緊急連絡体制・掲示</div><div class="item-name-en">Emergency Contact System &amp; Posting</div></td>
             <td><div class="status-group">
               <label class="status-btn status-ok"><input type="radio" name="st-emergency" value="OK"><span class="status-label ok-label">OK</span></label>
@@ -666,7 +565,7 @@
       </table>
     </div>
 
-    <div class="section" id="findings-section">
+    <div class="section">
       <div class="section-title">指摘事項・是正措置 <span>Findings &amp; Corrective Actions</span></div>
       <table class="data-table">
         <thead>
@@ -684,7 +583,7 @@
       <button class="add-row-btn" onclick="addRow('findings-body', findingRowTemplate)">＋ 行を追加 / Add Row</button>
     </div>
 
-    <div class="section" id="comment-section">
+    <div class="section">
       <div class="section-title">総評・特記事項 <span>Overall Comment</span></div>
       <div class="form-group">
         <textarea id="d-comment" placeholder="総評・特記事項を記入してください&#10;Enter overall comments and special notes..."></textarea>
@@ -711,7 +610,8 @@
         <div class="photo-item"><div class="photo-item-label">6. 整理整頓・清潔（5S）<span class="en-sub">Housekeeping &amp; 5S</span></div><div class="photo-cell" id="pc-fivs"><img id="pci-fivs" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-fivs">Not available</div></div></div>
         <div class="photo-item"><div class="photo-item-label">7. 安全標識・掲示物<span class="en-sub">Safety Signs &amp; Postings</span></div><div class="photo-cell" id="pc-signage"><img id="pci-signage" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-signage">Not available</div></div></div>
         <div class="photo-item"><div class="photo-item-label">8. PPE（個人防護具）着用状況<span class="en-sub">PPE Usage</span></div><div class="photo-cell" id="pc-ppe"><img id="pci-ppe" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-ppe">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">9. 緊急連絡体制・掲示<span class="en-sub">Emergency Contact System</span></div><div class="photo-cell" id="pc-emergency"><img id="pci-emergency" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-emergency">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">9. ロックアウト・タグアウト（LOTO）<span class="en-sub">Lockout / Tagout (LOTO)</span></div><div class="photo-cell" id="pc-loto"><img id="pci-loto" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-loto">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">10. 緊急連絡体制・掲示<span class="en-sub">Emergency Contact System</span></div><div class="photo-cell" id="pc-emergency"><img id="pci-emergency" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-emergency">Not available</div></div></div>
       </div>
     </div>
 
@@ -851,7 +751,7 @@
       </div>
     </div>
 
-    <div class="section" id="comment-section">
+    <div class="section">
       <div class="section-title">総評・特記事項 <span>Overall Comments</span></div>
       <div class="form-group">
         <textarea id="w-comment" placeholder="総評や特記事項&#10;Overall comments and special notes..."></textarea>
@@ -1027,7 +927,6 @@ window._photoHandler = function(inp) {
     if (pc) {
       var img = document.createElement('img');
       img.src = dataUrl;
-      img.className = 'pci loaded';
       img.style.cssText = 'display:block;width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #2e7d32;';
       while (pc.firstChild) pc.removeChild(pc.firstChild);
       pc.appendChild(img);
@@ -1051,12 +950,11 @@ window._photoHandler = function(inp) {
         var existGoodImg = goodTd.querySelector('img[data-good-photo]');
         if (existGoodImg) {
           existGoodImg.src = dataUrl;
-          existGoodImg.style.display = 'block';
         } else {
           var goodImg = document.createElement('img');
           goodImg.src = dataUrl;
           goodImg.setAttribute('data-good-photo','1');
-          goodImg.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px auto';
+          goodImg.style.cssText = 'display:block;width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #81c784;margin:6px 0';
           var goodPhotoAreaEl = goodTd.querySelector('.photo-area');
           if (goodPhotoAreaEl) goodTd.insertBefore(goodImg, goodPhotoAreaEl);
           else goodTd.appendChild(goodImg);
@@ -1071,12 +969,11 @@ window._photoHandler = function(inp) {
         var existBadImg = badTdEl.querySelector('img[data-bad-photo]');
         if (existBadImg) {
           existBadImg.src = dataUrl;
-          existBadImg.style.display = 'block';
         } else {
           var badImgEl = document.createElement('img');
           badImgEl.src = dataUrl;
           badImgEl.setAttribute('data-bad-photo','1');
-          badImgEl.style.cssText = 'display:block;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
+          badImgEl.style.cssText = 'display:block;width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
           var badPhotoAreaEl2 = badTdEl.querySelector('.photo-area');
           if (badPhotoAreaEl2) badTdEl.insertBefore(badImgEl, badPhotoAreaEl2);
           else badTdEl.appendChild(badImgEl);
@@ -1093,12 +990,11 @@ window._photoHandler = function(inp) {
           var existNgImg = badTd.querySelector('img[data-ng-photo]');
           if (existNgImg) {
             existNgImg.src = dataUrl;
-            existNgImg.style.display = 'block';
           } else {
             var ngImg = document.createElement('img');
             ngImg.src = dataUrl;
             ngImg.setAttribute('data-ng-photo','1');
-            ngImg.style.cssText = 'display:block;max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px auto';
+            ngImg.style.cssText = 'display:block;width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
             var photoAreaEl = badTd.querySelector('.photo-area');
             if (photoAreaEl) badTd.insertBefore(ngImg, photoAreaEl);
           }
@@ -1124,14 +1020,12 @@ function findingRowTemplate() {
     '<td><input type="text" placeholder="場所 / Location"></td>' +
     '<td style="background:#fff8f8;vertical-align:top">' +
       '<input type="text" class="remark-input" placeholder="BAD：問題の内容">' +
-      '<img id="img-fbad' + n + '" class="finding-photo" data-bad-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto" alt="">' +
       '<div class="photo-area" style="margin-top:8px">' +
         '<input type="file" id="fi-fbad' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
       '</div>' +
     '</td>' +
     '<td style="background:#f6fff6;vertical-align:top">' +
       '<input type="text" class="remark-input" placeholder="GOOD：是正後の状況">' +
-      '<img id="img-fgood' + n + '" class="finding-photo" data-good-photo="1" style="display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto" alt="">' +
       '<div class="photo-area" style="margin-top:8px">' +
         '<input type="file" id="fi-fgood' + n + '" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">' +
       '</div>' +
@@ -1282,6 +1176,7 @@ var checklistItems = {
   'st-fivs':      '整理整頓・清潔（5S）',
   'st-signage':   '安全標識・掲示物',
   'st-ppe':       'PPE着用状況',
+  'st-loto':      'ロックアウト・タグアウト（LOTO）',
   'st-emergency': '緊急連絡体制・掲示'
 };
 
@@ -1324,23 +1219,14 @@ function onNgChange(radioName, value) {
     badInput.type = 'text'; badInput.className = 'remark-input';
     badInput.placeholder = 'BAD：問題の内容'; badInput.value = badText;
     badTd.appendChild(badInput);
-    // チェックリスト写真プレースホルダー（常に作成、写真あれば表示）
-    var badImgSlot = document.createElement('img');
-    badImgSlot.className = 'finding-photo';
-    badImgSlot.setAttribute('data-ng-photo','1');
-    badImgSlot.style.cssText = 'max-width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
-    badImgSlot.alt = '';
-    if (photoData) { badImgSlot.src = photoData; badImgSlot.style.display = 'block'; }
-    else { badImgSlot.style.display = 'none'; }
-    badTd.appendChild(badImgSlot);
-    // 手動BAD写真プレースホルダー
-    var badManualSlot = document.createElement('img');
-    badManualSlot.id = 'img-fbad' + n;
-    badManualSlot.className = 'finding-photo';
-    badManualSlot.setAttribute('data-bad-photo','1');
-    badManualSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #ef9a9a;margin:6px auto';
-    badManualSlot.alt = '';
-    badTd.appendChild(badManualSlot);
+    // チェックリスト写真があれば表示
+    if (photoData) {
+      var badImg = document.createElement('img');
+      badImg.src = photoData;
+      badImg.setAttribute('data-ng-photo','1');
+      badImg.style.cssText = 'display:block;width:100%;max-height:140px;object-fit:contain;border-radius:4px;border:1px solid #ef9a9a;margin:6px 0';
+      badTd.appendChild(badImg);
+    }
     var badPhotoArea = document.createElement('div');
     badPhotoArea.className = 'photo-area'; badPhotoArea.style.marginTop = '6px';
     var badFileInput = document.createElement('input');
@@ -1357,14 +1243,6 @@ function onNgChange(radioName, value) {
     goodInput.type = 'text'; goodInput.className = 'remark-input';
     goodInput.placeholder = 'GOOD：是正後の状況';
     goodTd.appendChild(goodInput);
-    // GOOD写真プレースホルダー（非表示で先に作成）
-    var goodImgSlot = document.createElement('img');
-    goodImgSlot.id = 'img-fgood' + n;
-    goodImgSlot.className = 'finding-photo';
-    goodImgSlot.setAttribute('data-good-photo','1');
-    goodImgSlot.style.cssText = 'display:none;max-width:100%;max-height:160px;object-fit:contain;border-radius:4px;border:2px solid #81c784;margin:6px auto';
-    goodImgSlot.alt = '';
-    goodTd.appendChild(goodImgSlot);
     var goodPhotoArea = document.createElement('div');
     goodPhotoArea.className = 'photo-area'; goodPhotoArea.style.marginTop = '6px';
     var goodFileInput = document.createElement('input');
@@ -1374,31 +1252,17 @@ function onNgChange(radioName, value) {
     goodPhotoArea.appendChild(goodFileInput);
     goodTd.appendChild(goodPhotoArea);
 
-    // 行を組み立て（innerHTML+=を使わずcreateElementで統一）
-    var numTd = document.createElement('td');
-    numTd.style.cssText = 'text-align:center;color:#bbb;font-size:12px;width:28px';
-    numTd.textContent = n;
-    var locTd = document.createElement('td');
-    var locInput = document.createElement('input');
-    locInput.type = 'text'; locInput.placeholder = '場所 / Location'; locInput.value = itemName;
-    locTd.appendChild(locInput);
-    var assigneeTd = document.createElement('td');
-    var assigneeInput = document.createElement('input');
-    assigneeInput.type = 'text'; assigneeInput.placeholder = '担当者 / Assignee';
-    assigneeTd.appendChild(assigneeInput);
-    var statusTd = document.createElement('td');
-    var statusSel = document.createElement('select');
-    statusSel.style.cssText = 'width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit';
-    ['対応中 / In Progress','完了 / Closed'].forEach(function(o){
-      var opt = document.createElement('option'); opt.textContent = o; statusSel.appendChild(opt);
-    });
-    statusTd.appendChild(statusSel);
-    newTr.appendChild(numTd);
-    newTr.appendChild(locTd);
+    // 行を組み立て
+    newTr.innerHTML =
+      '<td style="text-align:center;color:#bbb;font-size:12px;width:28px">' + n + '</td>' +
+      '<td><input type="text" placeholder="場所 / Location" value="' + itemName + '"></td>';
     newTr.appendChild(badTd);
     newTr.appendChild(goodTd);
-    newTr.appendChild(assigneeTd);
-    newTr.appendChild(statusTd);
+    newTr.innerHTML +=
+      '<td><input type="text" placeholder="担当者 / Assignee"></td>' +
+      '<td><select style="width:100%;border:none;padding:7px 9px;font-size:12px;font-family:inherit">' +
+        '<option>対応中 / In Progress</option><option>完了 / Closed</option>' +
+      '</select></td>';
     tbody.appendChild(newTr);
     addFindingPhotoRow(n);
     showToast('⚠️ 指摘事項に自動追加しました');
