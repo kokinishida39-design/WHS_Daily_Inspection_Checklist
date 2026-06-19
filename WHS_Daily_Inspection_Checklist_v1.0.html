@@ -324,13 +324,7 @@
       /* 印刷時: アップロードボタン非表示・サムネイル表示 */
       .photo-file-input { display: none !important; }
       .photo-thumb { display: block !important; width: 48px !important; height: 48px !important; margin: 0 !important; }
-      /* チェックリスト行のコンパクト化（4項目/ページ想定） */
-      .checklist-table td, .checklist-table th { padding: 4px 6px !important; }
-      .item-name { font-size: 11px !important; line-height: 1.3 !important; }
-      .item-name-en { font-size: 9px !important; }
-      .status-btn { padding: 2px 3px !important; }
-      .status-label { font-size: 10px !important; padding: 2px 5px !important; }
-      .remark-input { font-size: 11px !important; padding: 3px 4px !important; }
+      /* チェックリストは新カードレイアウトで対応 */
       .tab-panel { display: none !important; }
       .tab-panel.active { display: block !important; }
       .checklist-table th, .data-table th, .kpi-card {
@@ -343,6 +337,67 @@
       }
       .kpi-card input { border-bottom: 1px solid #ccc !important; }
       .status-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* ===== 5ページ構成 カードレイアウト ===== */
+
+      /* チェックリストsectionはページまたぎOK */
+      #checklist-section { page-break-inside: auto !important; }
+      .checklist-table { display: block !important; }
+      .checklist-table thead { display: none !important; }
+
+      /* Page1: 行1-3 を横3列カード */
+      #cb-p1 {
+        display: flex !important;
+        flex-direction: row;
+        gap: 6px;
+        page-break-after: always;
+        break-after: always;
+      }
+      #cb-p1 tr { flex: 1 1 0; }
+
+      /* Page2: 行4-6が左列、行7-9が右列（CSS Gridで明示配置） */
+      #cb-p2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, auto);
+        gap: 6px;
+      }
+      #cb-p2 tr:nth-child(1) { grid-column: 1; grid-row: 1; }
+      #cb-p2 tr:nth-child(2) { grid-column: 1; grid-row: 2; }
+      #cb-p2 tr:nth-child(3) { grid-column: 1; grid-row: 3; }
+      #cb-p2 tr:nth-child(4) { grid-column: 2; grid-row: 1; }
+      #cb-p2 tr:nth-child(5) { grid-column: 2; grid-row: 2; }
+      #cb-p2 tr:nth-child(6) { grid-column: 2; grid-row: 3; }
+
+      /* 各行をカード表示 */
+      .checklist-table tbody tr {
+        display: flex !important;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 8px;
+        box-sizing: border-box;
+        break-inside: avoid;
+      }
+      .checklist-table tbody tr td {
+        display: block !important;
+        border: none !important;
+        padding: 2px 0 !important;
+        width: 100% !important;
+      }
+      .checklist-table tbody tr td:first-child { display: none !important; }
+
+      /* Page3: 指摘事項 / Page4: 総評 */
+      #findings-section { page-break-before: always; break-before: always; }
+      #comment-section { page-break-before: always; break-before: always; }
+
+      /* Page5: 写真記録 3x3（全9枚1ページ）*/
+      .photo-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 6px !important;
+      }
+      .photo-item { break-inside: avoid; page-break-inside: avoid; max-height: none !important; }
       #photo-page {
         display: block !important;
         page-break-before: always;
@@ -372,11 +427,6 @@
       }
       .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .photo-item { break-inside: avoid; page-break-inside: avoid; }
-      /* 6枚目の後にページブレーク（1P:6枚, 2P:3枚） */
-      #photo-grid-checklist .photo-item:nth-child(6) {
-        page-break-after: always;
-        break-after: always;
-      }
       .photo-has-image { border-color: #2e7d32 !important; background: #f1f8f1 !important; }
 
       /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
@@ -480,7 +530,7 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="checklist-section">
       <div class="section-title">安全点検チェックリスト <span>Safety Inspection Checklist</span></div>
       <table class="checklist-table">
         <thead>
@@ -492,7 +542,7 @@
             <th style="width:130px">📷 写真 / Photo</th>
           </tr>
         </thead>
-        <tbody id="checklist-body">
+        <tbody id="cb-p1">
           <!-- 1 -->
           <tr>
             <td style="text-align:center;color:#bbb;font-size:12px">1</td>
@@ -532,6 +582,8 @@
             <td><div class="photo-area"><input type="file" id="fi-firstaid" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
 <img id="pth-firstaid" class="photo-thumb" src="" alt="撮影済み"></div></td>
           </tr>
+        </tbody>
+        <tbody id="cb-p2">
           <!-- 4 -->
           <tr>
             <td style="text-align:center;color:#bbb;font-size:12px">4</td>
@@ -614,7 +666,7 @@
       </table>
     </div>
 
-    <div class="section">
+    <div class="section" id="findings-section">
       <div class="section-title">指摘事項・是正措置 <span>Findings &amp; Corrective Actions</span></div>
       <table class="data-table">
         <thead>
@@ -632,7 +684,7 @@
       <button class="add-row-btn" onclick="addRow('findings-body', findingRowTemplate)">＋ 行を追加 / Add Row</button>
     </div>
 
-    <div class="section">
+    <div class="section" id="comment-section">
       <div class="section-title">総評・特記事項 <span>Overall Comment</span></div>
       <div class="form-group">
         <textarea id="d-comment" placeholder="総評・特記事項を記入してください&#10;Enter overall comments and special notes..."></textarea>
@@ -799,7 +851,7 @@
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="comment-section">
       <div class="section-title">総評・特記事項 <span>Overall Comments</span></div>
       <div class="form-group">
         <textarea id="w-comment" placeholder="総評や特記事項&#10;Overall comments and special notes..."></textarea>
