@@ -343,6 +343,23 @@
       .photo-grid, .photo-item, .photo-na { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .photo-item { break-inside: avoid; page-break-inside: avoid; }
       .photo-has-image { border-color: #2e7d32 !important; background: #f1f8f1 !important; }
+
+      /* 印刷時の画像サイズ制限 — PDFファイルサイズ削減 */
+      img[data-ng-photo],
+      img[data-good-photo],
+      img[data-bad-photo] {
+        max-width: 200px !important;
+        max-height: 150px !important;
+        width: auto !important;
+        height: auto !important;
+      }
+      .pci, .pci.loaded {
+        max-width: 240px !important;
+        max-height: 180px !important;
+        width: auto !important;
+        height: auto !important;
+      }
+      .photo-item { width: 50% !important; }
     }
   
     .photo-thumb {
@@ -538,19 +555,6 @@
           <!-- 9 -->
           <tr>
             <td style="text-align:center;color:#bbb;font-size:12px">9</td>
-            <td><div class="item-name">ロックアウト・タグアウト（LOTO）</div><div class="item-name-en">Lockout / Tagout (LOTO)</div></td>
-            <td><div class="status-group">
-              <label class="status-btn status-ok"><input type="radio" name="st-loto" value="OK"><span class="status-label ok-label">OK</span></label>
-              <label class="status-btn status-ng"><input type="radio" name="st-loto" value="NG"><span class="status-label ng-label">NG</span></label>
-              <label class="status-btn status-na"><input type="radio" name="st-loto" value="N/A"><span class="status-label na-label">N/A</span></label>
-            </div></td>
-            <td><input type="text" class="remark-input" placeholder="所見 / Remarks"></td>
-            <td><div class="photo-area"><input type="file" id="fi-loto" accept="image/*" class="photo-file-input" onchange="window._photoHandler(this)">
-<img id="pth-loto" class="photo-thumb" src="" alt="撮影済み"></div></td>
-          </tr>
-          <!-- 10 -->
-          <tr>
-            <td style="text-align:center;color:#bbb;font-size:12px">10</td>
             <td><div class="item-name">緊急連絡体制・掲示</div><div class="item-name-en">Emergency Contact System &amp; Posting</div></td>
             <td><div class="status-group">
               <label class="status-btn status-ok"><input type="radio" name="st-emergency" value="OK"><span class="status-label ok-label">OK</span></label>
@@ -610,8 +614,7 @@
         <div class="photo-item"><div class="photo-item-label">6. 整理整頓・清潔（5S）<span class="en-sub">Housekeeping &amp; 5S</span></div><div class="photo-cell" id="pc-fivs"><img id="pci-fivs" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-fivs">Not available</div></div></div>
         <div class="photo-item"><div class="photo-item-label">7. 安全標識・掲示物<span class="en-sub">Safety Signs &amp; Postings</span></div><div class="photo-cell" id="pc-signage"><img id="pci-signage" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-signage">Not available</div></div></div>
         <div class="photo-item"><div class="photo-item-label">8. PPE（個人防護具）着用状況<span class="en-sub">PPE Usage</span></div><div class="photo-cell" id="pc-ppe"><img id="pci-ppe" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-ppe">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">9. ロックアウト・タグアウト（LOTO）<span class="en-sub">Lockout / Tagout (LOTO)</span></div><div class="photo-cell" id="pc-loto"><img id="pci-loto" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-loto">Not available</div></div></div>
-        <div class="photo-item"><div class="photo-item-label">10. 緊急連絡体制・掲示<span class="en-sub">Emergency Contact System</span></div><div class="photo-cell" id="pc-emergency"><img id="pci-emergency" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-emergency">Not available</div></div></div>
+        <div class="photo-item"><div class="photo-item-label">9. 緊急連絡体制・掲示<span class="en-sub">Emergency Contact System</span></div><div class="photo-cell" id="pc-emergency"><img id="pci-emergency" class="pci" src="" alt="" style="width:100%;max-height:180px;object-fit:contain;border-radius:4px;border:1px solid #eee;"><div class="photo-na" id="pna-emergency">Not available</div></div></div>
       </div>
     </div>
 
@@ -1176,7 +1179,6 @@ var checklistItems = {
   'st-fivs':      '整理整頓・清潔（5S）',
   'st-signage':   '安全標識・掲示物',
   'st-ppe':       'PPE着用状況',
-  'st-loto':      'ロックアウト・タグアウト（LOTO）',
   'st-emergency': '緊急連絡体制・掲示'
 };
 
