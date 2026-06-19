@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>衛生管理者チェックシート</title>
+<style>
+  :root {
+    --c1: #dc2626; --c1b: #fef2f2; --c1bo: #fca5a5;
+    --c2: #d97706; --c2b: #fffbeb; --c2bo: #fcd34d;
+    --c3: #16a34a; --c3b: #f0fdf4; --c3bo: #86efac;
+    --cat: #1e3a5f; --cat-bg: #dbeafe;
+    --border: #cbd5e1; --bg: #f8fafc; --text: #1e293b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Sans", "Yu Gothic", sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
+
+  /* ===== HEADER ===== */
+  .doc-header { background: var(--cat); color: #fff; padding: 16px 20px 12px; }
+  .doc-header h1 { font-size: 17px; font-weight: 700; letter-spacing: .03em; margin-bottom: 10px; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .meta-item { display: flex; flex-direction: column; }
+  .meta-item label { font-size: 10px; opacity: .75; margin-bottom: 3px; }
+  .meta-item input, .meta-item select {
+    border: none; border-bottom: 1px solid rgba(255,255,255,.5);
+    background: transparent; color: #fff; font-size: 13px; padding: 2px 0;
+    outline: none; font-family: inherit;
+  }
+  .meta-item input::placeholder { color: rgba(255,255,255,.5); }
+  .score-bar { margin-top: 12px; background: rgba(255,255,255,.15); border-radius: 6px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+  .score-bar span { font-size: 11px; opacity: .8; }
+  .score-val { font-size: 22px; font-weight: 700; }
+  .score-sub { font-size: 11px; opacity: .7; }
+
+  /* ===== CATEGORY ===== */
+  .category { margin: 12px 10px; }
+  .cat-header { background: var(--cat-bg); color: var(--cat); font-weight: 700; font-size: 13px;
+    padding: 8px 12px; border-left: 4px solid var(--cat); border-radius: 4px 4px 0 0; }
+  .cat-items { border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px; overflow: hidden; }
+
+  /* ===== ITEM ===== */
+  .item { border-bottom: 1px solid var(--border); padding: 10px 12px; background: #fff; }
+  .item:last-child { border-bottom: none; }
+  .item-q { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+  .item-num { background: var(--cat); color: #fff; font-size: 10px; font-weight: 700;
+    border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .item-title { font-size: 12.5px; font-weight: 600; line-height: 1.5; flex: 1; }
+
+  /* ===== CHOICES ===== */
+  .choices { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+  .choice { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: all .15s; }
+  .choice:has(input:checked).c1 { background: var(--c1b); border-color: var(--c1); }
+  .choice:has(input:checked).c2 { background: var(--c2b); border-color: var(--c2); }
+  .choice:has(input:checked).c3 { background: var(--c3b); border-color: var(--c3); }
+  .choice:not(:has(input:checked)) { background: #f8fafc; border-color: var(--border); }
+  .choice input[type=radio] { margin-top: 1px; flex-shrink: 0; accent-color: var(--cat); }
+  .badge { font-weight: 700; font-size: 12px; flex-shrink: 0; width: 16px; }
+  .c1 .badge { color: var(--c1); }
+  .c2 .badge { color: var(--c2); }
+  .c3 .badge { color: var(--c3); }
+  .choice-text { font-size: 11.5px; line-height: 1.5; }
+
+  /* ===== COMMENT ===== */
+  .comment-wrap { margin-top: 4px; }
+  .comment-wrap label { font-size: 10px; color: #64748b; display: block; margin-bottom: 3px; }
+  .comment-wrap textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 4px; padding: 6px 8px;
+    font-family: inherit; font-size: 12px; resize: vertical; min-height: 44px; line-height: 1.4;
+    color: var(--text); outline: none;
+  }
+  .comment-wrap textarea:focus { border-color: var(--cat); }
+
+  /* ===== PRINT BUTTON ===== */
+  .print-bar { position: sticky; bottom: 0; background: #fff; border-top: 1px solid var(--border); padding: 12px 16px; display: flex; gap: 10px; }
+  .btn-print { flex: 1; background: var(--cat); color: #fff; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 700; padding: 14px; cursor: pointer; font-family: inherit; }
+  .btn-reset { background: #f1f5f9; color: #64748b; border: none; border-radius: 8px;
+    font-size: 12px; padding: 14px 16px; cursor: pointer; font-family: inherit; }
+
+  /* ===== PRINT CSS ===== */
+  @media print {
+    body { background: #fff; font-size: 11px; }
+    .print-bar { display: none; }
+    .doc-header { background: #1e3a5f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 10px 14px; }
+    .category { margin: 6px 4px; page-break-inside: avoid; }
+    .cat-header { background: var(--cat-bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .item { padding: 6px 10px; }
+    .choices { gap: 3px; }
+    .choice { padding: 4px 8px; }
+    .choice:not(:has(input:checked)) { display: none; }
+    .choice:has(input:checked) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .comment-wrap textarea { border: 1px solid #ccc; min-height: 30px; }
+    .score-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>🏢 衛生管理者チェックシート</h1>
+  <div class="meta-grid">
+    <div class="meta-item">
+      <label>実施日</label>
+      <input type="date" id="date-field">
+    </div>
+    <div class="meta-item">
+      <label>実施者名</label>
+      <input type="text" id="name-field" placeholder="氏名を入力">
+    </div>
+    <div class="meta-item">
+      <label>サイト</label>
+      <input type="text" id="site-field" placeholder="例：DKJ4-DS">
+    </div>
+    <div class="meta-item">
+      <label>総合判定</label>
+      <input type="text" id="judgment-field" placeholder="自動入力" readonly style="font-weight:700;">
+    </div>
+  </div>
+  <div class="score-bar">
+    <span>合計スコア</span>
+    <span class="score-val" id="total-score">—</span>
+    <span class="score-sub">/ 75点</span>
+    <span id="score-pct" style="margin-left:auto; font-size:14px; font-weight:700;"></span>
+  </div>
+</div>
+
+<div id="checklist"></div>
+
+<div class="print-bar">
+  <button class="btn-reset" onclick="resetAll()">↺ リセット</button>
+  <button class="btn-print" onclick="window.print()">🖨️ PDF出力・印刷</button>
+</div>
+
+<script>
+const DATA = [
+  {
+    cat: "オフィス環境",
+    items: [
+      {
+        q: "蛍光灯・室内照明の取り付けは適切か（外れ・壊れ・汚れ等）",
+        c: ["蛍光灯・照明に汚れ・壊れ・破損が複数ある","蛍光灯・照明に汚れ・壊れ・破損が１か所ある","すべての蛍光灯・照明に汚れ・壊れ・外れがない"]
+      },
+      {
+        q: "作業台の照度は適切か（ちらつき・まぶしさ等）\n照度計を用いて700lx以上（オフィス）185lx以上（庫内）を確認",
+        c: ["机上で照度が不十分で業務に支障がある","机上で照度が不十分なエリアがある","すべての机上で照度が十分である"]
+      },
+      {
+        q: "換気・空調調節は適切か",
+        c: ["換気・空調システムがない、または作動していない","換気・空調システムはあるが、時間帯・場所により不十分である","換気・空調システムが正常に作動している"]
+      },
+      {
+        q: "温度・湿度管理は適切か（気温18〜28℃ ／ 相対湿度40〜70%）",
+        c: ["冷暖房の調整ができず業務に支障がある","細かい温度調整ができず冷暖房の効果が一定でない","すべての場所で冷暖房の調整ができている"]
+      },
+      {
+        q: "ワークステーションは適切か（机上・下の整理、書類、段ボール等、作業空間の確保）",
+        c: ["作業環境が不十分であり整頓されていない","机上が整頓されていないか足元に物が置かれている箇所がある","机上・足元は整理されており作業空間も十分である"]
+      },
+      {
+        q: "通路幅は適切で物が置かれていないか",
+        c: ["通路幅が不十分である","通路幅は十分だが、通路に物が置かれている","通路幅は十分であり、通路に物も置かれていない"]
+      },
+      {
+        q: "通路につまづき・すべりやすい箇所はないか",
+        c: ["つまづき、すべりやすい箇所が複数ある","つまづき、すべりやすい箇所が1か所ある","問題となる箇所はない"]
+      },
+      {
+        q: "配線・コンセントなど電気用具は安全に管理されているか（たこ足・垂れ下がり・アース端子等）",
+        c: ["コード類が通路に出ており、垂れ下がり・たこ足配線もある","通路にコードが出ている、もしくは垂れ下がり・たこ足配線がある","すべて安全に整備されている"]
+      },
+      {
+        q: "不自然な作業姿勢はないか（椅子の高さは調節が可能か）",
+        c: ["机の高さ60〜72cm・椅子の高さ37〜40cmのものではない","一部の机の高さ60〜72cm・椅子の高さ37〜40cmのものではない","全員の机の高さ60〜72cm・椅子の高さ37〜40cmで調節が可能である"]
+      },
+      {
+        q: "室内表示物・看板の取り付けは適切か（はがれ・汚れ・内容・掲示期間等）",
+        c: ["古いものが掲示されており、全体的にはがれや汚れがある","一部に汚れや期限切れ・期限の未記載がある","期間を明示し、整備されている"]
+      },
+      {
+        q: "事務所内の書類は整理整頓されているか",
+        c: ["書類は整理されておらず、定期的に確認・廃棄していない","ファイリング・ラベリングされていない書類がある","事務所内に不要な書類はなく、定期的に整理・廃棄されている"]
+      },
+      {
+        q: "棚やラック内の備品類は適切に保管・定位置されているか",
+        c: ["整備・管理がされておらず、棚・ラックからはみ出たり落下の危険がある","落下の危険はないが、整理整頓されていない","整備・管理されており定位置化もされている"]
+      },
+      {
+        q: "廃棄物（ゴミ）の処理・分別は適切か",
+        c: ["分別・回収ルールがなく、ゴミ箱や周辺が不衛生な状態である","ごみの回収が不定期またはゴミ箱が不足している","分別や定期的な処理がされており、ゴミ箱も充足している"]
+      },
+      {
+        q: "トイレ・給湯室に不衛生な箇所はないか",
+        c: ["トイレ・給湯室共に不衛生な状態である","トイレまたは給湯室に不衛生な箇所がある","トイレ・給湯室共に清潔に保たれている"]
+      },
+      {
+        q: "冷蔵庫内は清潔に保たれているか",
+        c: ["食品は記名されておらず、定期的に清掃もされていない","記名のない食品・期限切れの食品が残っている","清掃・期限切れ・未記名食品の廃棄を定期的に行っている"]
+      }
+    ]
+  },
+  {
+    cat: "防災・安全",
+    items: [
+      {
+        q: "非常口のドアは正常か",
+        c: ["非常口のドアが常に施錠されている","非常口の前に物が置かれている、または非常灯が切れている","問題なし"]
+      },
+      {
+        q: "消火器は常に使えるようになっているか",
+        c: ["消火器が各フロアにない、または前に障害物が置かれている","消火器の標識がない、または定位置に置かれていない","消火器の設置場所・標識は問題がなく障害物もない"]
+      },
+      {
+        q: "家具・電化製品（高さ1200mm以上）またはウォーターサーバーなどは固定されているか",
+        c: ["転倒防止対策がとられていない","対策をしていない箇所があり、重いものを下段に置くなど工夫もしていない","すべて固定などの対策が取られている"]
+      },
+      {
+        q: "キャビネットの上のものは落下しないか",
+        c: ["物が置かれており、整理されておらず落下の可能性がある","物が置かれており、整理はされているが落下防止対策がされていない","物が置かれていない"]
+      },
+      {
+        q: "救急用具は設置されているか",
+        c: ["救急用具がない","使用期限切れ・非衛生的な用具がある","すべての用具が安全・衛生的に保管されている"]
+      },
+      {
+        q: "防災備品は適切に管理されているか",
+        c: ["防災備品がない","防災備品はあるが不足していたり期限切れのものがある","適切に配置され、定期的に期限の見直しをしている"]
+      }
+    ]
+  },
+  {
+    cat: "受動喫煙対策",
+    items: [
+      {
+        q: "異臭の発生、たばこ・煙やほこりの充満はないか",
+        c: ["職場分煙が未実施である","喫煙室があるが煙草の煙・臭気が周囲にもれている","屋内は完全禁煙、または喫煙室があり煙草の煙・臭気が周囲にもれていない"]
+      }
+    ]
+  },
+  {
+    cat: "安全衛生に関する社内の取り組み",
+    items: [
+      {
+        q: "安全衛生に関する取組が積極的に行われているか",
+        c: ["掲示・イントラネット等で衛生委員会議事録や健康情報が提供されていない","掲示・イントラネット等で衛生委員会議事録や健康情報を更新のたびに提供されていない","掲示・イントラネット等で衛生委員会議事録や健康情報を毎回提供されている"]
+      }
+    ]
+  },
+  {
+    cat: "緊急備品",
+    items: [
+      {
+        q: "AEDは適切に管理されているか",
+        c: ["ステータスインジケーターが赤色（×印）または何も表示されていない","バッテリーやパッドの有効期限に問題がある","すべてのAEDが安全・衛生的に保管されている"]
+      },
+      {
+        q: "洗眼器は適切に管理されているか",
+        c: ["Eyewasher液（精製水）の使用期限が切れている","破損や非衛生的（ほこりや汚れ）な状態である","すべての洗眼器が安全・衛生的に保管されている"]
+      }
+    ]
+  }
+];
+
+// Set today's date
+document.getElementById('date-field').value = new Date().toISOString().split('T')[0];
+
+let itemNum = 0;
+const container = document.getElementById('checklist');
+
+DATA.forEach(cat => {
+  const catDiv = document.createElement('div');
+  catDiv.className = 'category';
+  let html = `<div class="cat-header">${cat.cat}</div><div class="cat-items">`;
+
+  cat.items.forEach(item => {
+    itemNum++;
+    const id = `item${itemNum}`;
+    const qText = item.q.replace(/\n/g, '<br>');
+    html += `
+    <div class="item" id="wrap_${id}">
+      <div class="item-q">
+        <span class="item-num">${itemNum}</span>
+        <span class="item-title">${qText}</span>
+      </div>
+      <div class="choices">
+        <label class="choice c1">
+          <input type="radio" name="${id}" value="1" onchange="updateScore()">
+          <span class="badge">1</span>
+          <span class="choice-text">${item.c[0]}</span>
+        </label>
+        <label class="choice c2">
+          <input type="radio" name="${id}" value="2" onchange="updateScore()">
+          <span class="badge">2</span>
+          <span class="choice-text">${item.c[1]}</span>
+        </label>
+        <label class="choice c3">
+          <input type="radio" name="${id}" value="3" onchange="updateScore()">
+          <span class="badge">3</span>
+          <span class="choice-text">${item.c[2]}</span>
+        </label>
+      </div>
+      <div class="comment-wrap">
+        <label>コメント欄</label>
+        <textarea rows="2" placeholder="気になる点・改善メモなど"></textarea>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  catDiv.innerHTML = html;
+  container.appendChild(catDiv);
+});
+
+const TOTAL_ITEMS = itemNum; // 25
+
+function updateScore() {
+  let total = 0, answered = 0;
+  for (let i = 1; i <= TOTAL_ITEMS; i++) {
+    const sel = document.querySelector(`input[name="item${i}"]:checked`);
+    if (sel) { total += parseInt(sel.value); answered++; }
+  }
+  const scoreEl = document.getElementById('total-score');
+  const pctEl = document.getElementById('score-pct');
+  const judgEl = document.getElementById('judgment-field');
+
+  if (answered === 0) {
+    scoreEl.textContent = '—';
+    pctEl.textContent = '';
+    judgEl.value = '';
+    return;
+  }
+
+  const pct = Math.round(total / (TOTAL_ITEMS * 3) * 100);
+  scoreEl.textContent = total;
+  pctEl.textContent = pct + '%';
+
+  // 総合判定
+  let j = '';
+  if (answered < TOTAL_ITEMS) j = `記入中 (${answered}/${TOTAL_ITEMS})`;
+  else if (pct >= 90) j = '✅ 良好';
+  else if (pct >= 70) j = '⚠️ 要改善';
+  else j = '❌ 要対応';
+  judgEl.value = j;
+}
+
+function resetAll() {
+  if (!confirm('すべての入力をリセットしますか？')) return;
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.querySelectorAll('textarea').forEach(t => t.value = '');
+  document.getElementById('name-field').value = '';
+  document.getElementById('site-field').value = '';
+  document.getElementById('date-field').value = new Date().toISOString().split('T')[0];
+  document.getElementById('judgment-field').value = '';
+  document.getElementById('total-score').textContent = '—';
+  document.getElementById('score-pct').textContent = '';
+}
+</script>
+</body>
+</html>
