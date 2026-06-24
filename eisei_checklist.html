@@ -119,24 +119,37 @@ function shareAsPNG() {
   var btn = document.getElementById('btn-share-img');
   btn.textContent = '生成中...';
   btn.disabled = true;
-  // Hide print-bar during capture
   document.getElementById('print-bar').style.display = 'none';
-  html2canvas(document.body, {scale:1.5, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
+  // scale:1 でメモリ節約（iOS対策）
+  html2canvas(document.body, {scale:1, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
     .then(function(canvas) {
       document.getElementById('print-bar').style.display = '';
-      canvas.toBlob(function(blob) {
-        var info = buildSummary();
-        var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
-        var shareData = {files:[file], text:info.text};
-        if (navigator.canShare && navigator.canShare(shareData)) {
-          navigator.share(shareData)
-            .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
-        } else {
-          alert('\u30d5\u30a1\u30a4\u30eb\u5171\u6709\u306f\u3053\u306e\u30d6\u30e9\u30a6\u30b6\u3067\u306f\u5229\u7528\u3067\u304d\u307e\u305b\u3093\u3002\niOS Safari\uff08HTTPS\uff09\u3067\u30a2\u30af\u30bb\u30b9\u3057\u3066\u304f\u3060\u3055\u3044\u3002');
-        }
+      // toDataURL方式（iOS SafariでtoBlob nullになる問題を回避）
+      var dataURL = canvas.toDataURL('image/png');
+      if (!dataURL || dataURL === 'data:,') {
         btn.textContent = '\ud83d\udcf7 画像で送信';
         btn.disabled = false;
-      }, 'image/png');
+        alert('画像の生成に失敗しました。');
+        return;
+      }
+      // dataURL → Blob変換
+      var arr = dataURL.split(',');
+      var bstr = atob(arr[1]);
+      var u8arr = new Uint8Array(bstr.length);
+      for (var i=0; i<bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+      var blob = new Blob([u8arr], {type:'image/png'});
+      var info = buildSummary();
+      var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
+      var shareData = {files:[file], text:info.text};
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData)
+          .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
+      } else {
+        // ファイル共有不可の場合→テキストのみ共有
+        alert('このブラウザは画像ファイルの共有に対応していません。\nテキストで送信ボタンをお使いください。');
+      }
+      btn.textContent = '\ud83d\udcf7 画像で送信';
+      btn.disabled = false;
     })
     .catch(function(e) {
       document.getElementById('print-bar').style.display = '';
@@ -790,24 +803,37 @@ function shareAsPNG() {
   var btn = document.getElementById('btn-share-img');
   btn.textContent = '生成中...';
   btn.disabled = true;
-  // Hide print-bar during capture
   document.getElementById('print-bar').style.display = 'none';
-  html2canvas(document.body, {scale:1.5, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
+  // scale:1 でメモリ節約（iOS対策）
+  html2canvas(document.body, {scale:1, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
     .then(function(canvas) {
       document.getElementById('print-bar').style.display = '';
-      canvas.toBlob(function(blob) {
-        var info = buildSummary();
-        var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
-        var shareData = {files:[file], text:info.text};
-        if (navigator.canShare && navigator.canShare(shareData)) {
-          navigator.share(shareData)
-            .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
-        } else {
-          alert('\u30d5\u30a1\u30a4\u30eb\u5171\u6709\u306f\u3053\u306e\u30d6\u30e9\u30a6\u30b6\u3067\u306f\u5229\u7528\u3067\u304d\u307e\u305b\u3093\u3002\niOS Safari\uff08HTTPS\uff09\u3067\u30a2\u30af\u30bb\u30b9\u3057\u3066\u304f\u3060\u3055\u3044\u3002');
-        }
+      // toDataURL方式（iOS SafariでtoBlob nullになる問題を回避）
+      var dataURL = canvas.toDataURL('image/png');
+      if (!dataURL || dataURL === 'data:,') {
         btn.textContent = '\ud83d\udcf7 画像で送信';
         btn.disabled = false;
-      }, 'image/png');
+        alert('画像の生成に失敗しました。');
+        return;
+      }
+      // dataURL → Blob変換
+      var arr = dataURL.split(',');
+      var bstr = atob(arr[1]);
+      var u8arr = new Uint8Array(bstr.length);
+      for (var i=0; i<bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+      var blob = new Blob([u8arr], {type:'image/png'});
+      var info = buildSummary();
+      var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
+      var shareData = {files:[file], text:info.text};
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData)
+          .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
+      } else {
+        // ファイル共有不可の場合→テキストのみ共有
+        alert('このブラウザは画像ファイルの共有に対応していません。\nテキストで送信ボタンをお使いください。');
+      }
+      btn.textContent = '\ud83d\udcf7 画像で送信';
+      btn.disabled = false;
     })
     .catch(function(e) {
       document.getElementById('print-bar').style.display = '';
