@@ -35,13 +35,10 @@ body { margin:0; padding:0; font-family:"Hiragino Sans","Yu Gothic",sans-serif; 
 .comment-cell textarea { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding:5px 8px; font-family:inherit; font-size:12px; resize:vertical; min-height:40px; color:#1e293b; }
 /* PRINT BAR */
 #print-bar { position:sticky; bottom:0; background:#fff; border-top:2px solid #cbd5e1; padding:10px 14px; display:table; width:100%; box-sizing:border-box; }
-#print-bar { background:#fff; padding:10px 12px; border-top:2px solid #cbd5e1; position:sticky; bottom:0; }
-#bar-row1 { display:flex; gap:8px; margin-bottom:6px; }
-#bar-row2 { display:flex; gap:8px; }
-.btn-share-img { flex:1; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; padding:13px 8px; cursor:pointer; font-family:inherit; }
-.btn-share-txt { flex:1; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; padding:13px 8px; cursor:pointer; font-family:inherit; }
-#btn-reset { flex:1; background:#f1f5f9; color:#64748b; border:none; border-radius:8px; font-size:13px; padding:11px 8px; cursor:pointer; font-family:inherit; }
-#btn-print { flex:1; background:#475569; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; padding:11px 8px; cursor:pointer; font-family:inherit; }
+#btn-print { display:inline-block; background:#475569; color:#fff; border:none; border-radius:7px; font-size:13px; font-weight:700; padding:13px 10px; cursor:pointer; font-family:inherit; width:80px; vertical-align:top; }
+#btn-share { display:inline-block; background:#16a34a; color:#fff; border:none; border-radius:7px; font-size:14px; font-weight:700; padding:13px 10px; cursor:pointer; font-family:inherit; flex:1; margin:0 6px; vertical-align:top; }
+#btn-reset { display:inline-block; background:#f1f5f9; color:#64748b; border:none; border-radius:7px; font-size:12px; padding:13px 10px; cursor:pointer; font-family:inherit; width:60px; margin-right:0; vertical-align:top; }
+#print-bar { display:flex; gap:6px; align-items:stretch; }
 @media print {
   body { background:#fff; font-size:11px; }
   #print-bar { display:none; }
@@ -53,20 +50,20 @@ body { margin:0; padding:0; font-family:"Hiragino Sans","Yu Gothic",sans-serif; 
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js">
-// ===== SHARE FUNCTIONS =====
+// ===== CAT / ITEM DATA =====
 var CAT_MAP = [
-  {name:"オフィス環境", from:1, to:15},
-  {name:"防災・安全", from:16, to:21},
-  {name:"受動喫煙対策", from:22, to:22},
-  {name:"安全衛生の取り組み", from:23, to:23},
-  {name:"緊急備品", from:24, to:25}
+  {name:"オフィス環境",from:1,to:15},
+  {name:"防災・安全",from:16,to:21},
+  {name:"受動喫煙対策",from:22,to:22},
+  {name:"安全衛生の取り組み",from:23,to:23},
+  {name:"緊急備品",from:24,to:25}
 ];
-var ITEM_NAMES = ["","蛍光灯・室内照明","作業台の照度","換気・空調調節","温度・湿度管理",
+var INAMES = ["","蛍光灯・室内照明","作業台の照度","換気・空調調節","温度・湿度管理",
   "ワークステーション","通路幅","通路のつまづき・すべり","配線・電気用具","作業姿勢",
-  "室内表示物・看板","事務所内の書類整理","棚・ラック内の備品","廃棄物の処理・分別",
-  "トイレ・給湯室","冷蔵庫内の清潔さ","非常口のドア","消火器","家具・電化製品の固定",
+  "室内表示物・看板","書類整理","棚・ラック内の備品","廃棄物の処理・分別",
+  "トイレ・給湯室","冷蔵庫","非常口のドア","消火器","家具・電化製品の固定",
   "キャビネット上の落下防止","救急用具","防災備品","受動喫煙対策",
-  "安全衛生の取り組み","AED管理","洗眼器管理"];
+  "安全衛生の取り組み","AED","洗眼器"];
 
 function buildSummary() {
   var date = document.getElementById('f-date').value || '未入力';
@@ -78,126 +75,115 @@ function buildSummary() {
   var SEP = '━━━━━━━━━━━━━━━\n';
   var catLines = '';
   for (var c=0; c<CAT_MAP.length; c++) {
-    var cat = CAT_MAP[c]; var catScore = 0;
-    var catMax = (cat.to - cat.from + 1) * 3;
+    var cat = CAT_MAP[c]; var cs=0; var cm=(cat.to-cat.from+1)*3;
     for (var i=cat.from; i<=cat.to; i++) {
-      var r = document.querySelector('input[name="q'+i+'"]:checked');
-      if (r) catScore += parseInt(r.value);
+      var r=document.querySelector('input[name="q'+i+'"]:checked');
+      if(r) cs+=parseInt(r.value);
     }
-    catLines += '  \u2022 ' + cat.name + ': ' + catScore + '/' + catMax + '\n';
+    catLines += '  * '+cat.name+': '+cs+'/'+cm+'\n';
   }
   var issues = '';
   for (var j=1; j<=TOTAL; j++) {
-    var r2 = document.querySelector('input[name="q'+j+'"]:checked');
-    if (r2 && parseInt(r2.value) <= 2) {
-      var ta = document.querySelector('textarea[name="comment'+j+'"]');
-      var ctext = (ta && ta.value) ? ' (' + ta.value + ')' : '';
-      issues += '  \u26a0 ' + ITEM_NAMES[j] + ctext + '\n';
+    var r2=document.querySelector('input[name="q'+j+'"]:checked');
+    if(r2 && parseInt(r2.value)<=2) {
+      var ta=document.querySelector('textarea[name="comment'+j+'"]');
+      issues += '  ! '+INAMES[j]+(ta&&ta.value?' ('+ta.value+')':'')+'\n';
     }
   }
-  var judgeEmoji = judge === '良好' ? '\u2705' : judge === '要改善' ? '\u26a0\ufe0f' : '\u274c';
-  var text = '\ud83c\udfe2 衛生管理者チェックシート 完了報告\n' + SEP
-    + '\ud83d\udcc5 実施日: ' + date + '\n'
-    + '\ud83d\udc64 実施者: ' + name + '\n'
-    + '\ud83c\udfe6 サイト: ' + site + '\n'
-    + '\ud83d\udcca スコア: ' + scoreEl + '/75 (' + pct + ') ' + judgeEmoji + ' ' + judge + '\n'
-    + SEP + '\ud83d\udccb カテゴリ別\n' + catLines;
-  if (issues) { text += SEP + '\u26a0\ufe0f 要確認項目\n' + issues; }
+  var je = judge==='良好'?'[OK]':judge==='要改善'?'[!]':'[NG]';
+  var text = '[衛生管理者チェックシート 完了報告]\n'+SEP
+    +'日付: '+date+'\n実施者: '+name+'\nサイト: '+site
+    +'\nスコア: '+scoreEl+'/75 ('+pct+') '+je+' '+judge+'\n'
+    +SEP+'カテゴリ別\n'+catLines;
+  if(issues) text += SEP+'要確認項目\n'+issues;
   text += SEP;
-  return {text: text, date: date, name: name};
+  return {text:text, date:date};
 }
 
 function checkAnswered() {
-  var scoreEl = document.getElementById('score-val').textContent;
-  if (scoreEl === '—') { alert('チェックシートに回答してから送信してください。'); return false; }
+  if (document.getElementById('score-val').textContent==='—') {
+    alert('チェックシートに回答してから送信してください。'); return false;
+  }
   return true;
 }
 
-// ===== A: PNG画像で送信 =====
+// ===== A: PNG =====
+var _imgData = null;
+
 function shareAsPNG() {
   if (!checkAnswered()) return;
   var btn = document.getElementById('btn-share-img');
-  btn.textContent = '生成中...';
-  btn.disabled = true;
+  btn.textContent = '生成中...'; btn.disabled = true;
   document.getElementById('print-bar').style.display = 'none';
-  // scale:1 でメモリ節約（iOS対策）
   html2canvas(document.body, {scale:1, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
     .then(function(canvas) {
       document.getElementById('print-bar').style.display = '';
-      // toDataURL方式（iOS SafariでtoBlob nullになる問題を回避）
-      var dataURL = canvas.toDataURL('image/png');
-      if (!dataURL || dataURL === 'data:,') {
-        btn.textContent = '\ud83d\udcf7 画像で送信';
-        btn.disabled = false;
-        alert('画像の生成に失敗しました。');
-        return;
+      _imgData = canvas.toDataURL('image/png');
+      if (!_imgData || _imgData==='data:,') {
+        alert('画像生成に失敗しました。'); btn.textContent='\ud83d\udcf7 画像で送信'; btn.disabled=false; return;
       }
-      // dataURL → Blob変換
-      var arr = dataURL.split(',');
-      var bstr = atob(arr[1]);
-      var u8arr = new Uint8Array(bstr.length);
-      for (var i=0; i<bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
-      var blob = new Blob([u8arr], {type:'image/png'});
-      var info = buildSummary();
-      var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
-      var shareData = {files:[file], text:info.text};
-      if (navigator.canShare && navigator.canShare(shareData)) {
-        navigator.share(shareData)
-          .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
-      } else {
-        // ファイル共有不可の場合→テキストのみ共有
-        alert('このブラウザは画像ファイルの共有に対応していません。\nテキストで送信ボタンをお使いください。');
-      }
-      btn.textContent = '\ud83d\udcf7 画像で送信';
-      btn.disabled = false;
+      document.getElementById('preview-img').src = _imgData;
+      document.getElementById('img-modal').style.display = 'block';
+      btn.textContent='\ud83d\udcf7 画像で送信'; btn.disabled=false;
     })
     .catch(function(e) {
       document.getElementById('print-bar').style.display = '';
-      btn.textContent = '\ud83d\udcf7 画像で送信';
-      btn.disabled = false;
-      alert('画像生成エラー: ' + e.message);
+      alert('エラー: '+e.message); btn.textContent='\ud83d\udcf7 画像で送信'; btn.disabled=false;
     });
 }
 
-// ===== B: テキストファイルで送信 =====
+function closeModal() {
+  document.getElementById('img-modal').style.display = 'none';
+}
+
+function tryShareImg() {
+  if (!_imgData) return;
+  var arr=_imgData.split(','), bstr=atob(arr[1]);
+  var u8=new Uint8Array(bstr.length);
+  for(var i=0;i<bstr.length;i++) u8[i]=bstr.charCodeAt(i);
+  var blob=new Blob([u8],{type:'image/png'});
+  var info=buildSummary();
+  var file=new File([blob],'eisei_'+info.date+'.png',{type:'image/png'});
+  if(navigator.canShare && navigator.canShare({files:[file]})) {
+    navigator.share({files:[file]}).catch(function(e){if(e.name!=='AbortError') alert('エラー: '+e.message);});
+  } else {
+    alert('長押しして「写真に追加」で保存後、Slackに添付してください。');
+  }
+}
+
+// ===== B: TXT =====
 function shareAsTXT() {
   if (!checkAnswered()) return;
   var info = buildSummary();
-  // Build detailed text with all items
-  var detail = info.text + '\n【全項目詳細】\n';
-  for (var i=1; i<=TOTAL; i++) {
-    var r = document.querySelector('input[name="q'+i+'"]:checked');
-    var score = r ? r.value : '未回答';
-    var ta = document.querySelector('textarea[name="comment'+i+'"]');
-    var comment = (ta && ta.value) ? ' / ' + ta.value : '';
-    detail += i + '. ' + ITEM_NAMES[i] + ': ' + score + '点' + comment + '\n';
+  var detail = info.text+'\n-- 全項目詳細 --\n';
+  for(var i=1;i<=TOTAL;i++){
+    var r=document.querySelector('input[name="q'+i+'"]:checked');
+    var sc=r?r.value:'未';
+    var ta=document.querySelector('textarea[name="comment'+i+'"]');
+    detail+=i+'. '+INAMES[i]+': '+sc+'点'+(ta&&ta.value?' / '+ta.value:'')+'\n';
   }
-  var blob = new Blob([detail], {type:'text/plain;charset=utf-8'});
-  var file = new File([blob], 'eisei_checklist_' + info.date + '.txt', {type:'text/plain'});
-  var shareData = {files:[file], text:info.text};
-  if (navigator.canShare && navigator.canShare(shareData)) {
-    navigator.share(shareData)
-      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
-  } else if (navigator.share) {
-    navigator.share({text: info.text})
-      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
+  var blob=new Blob([detail],{type:'text/plain;charset=utf-8'});
+  var file=new File([blob],'eisei_'+info.date+'.txt',{type:'text/plain'});
+  var sd={files:[file],text:info.text};
+  if(navigator.canShare && navigator.canShare(sd)){
+    navigator.share(sd).catch(function(e){if(e.name!=='AbortError') copyFallback(detail);});
+  } else if(navigator.share){
+    navigator.share({text:info.text}).catch(function(e){if(e.name!=='AbortError') copyFallback(detail);});
   } else {
     copyFallback(detail);
   }
 }
 
 function copyFallback(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function() {
-      alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
-    });
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){ alert('クリップボードにコピーしました！\nSlackに貼り付けてください。'); });
   } else {
-    var tmp = document.createElement('textarea');
-    tmp.value = text; document.body.appendChild(tmp); tmp.select();
-    document.execCommand('copy'); document.body.removeChild(tmp);
-    alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
+    var t=document.createElement('textarea'); t.value=text;
+    document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
+    alert('クリップボードにコピーしました！\nSlackに貼り付けてください。');
   }
 }
+
 </script>
 </head>
 <body>
@@ -674,14 +660,28 @@ function copyFallback(text) {
 </table>
 
 
-<div id="print-bar">
-  <div id="bar-row1">
-    <button class="btn-share-img" id="btn-share-img" onclick="shareAsPNG()">&#x1F4F7; 画像で送信</button>
-    <button class="btn-share-txt" id="btn-share-txt" onclick="shareAsTXT()">&#x1F4C4; テキストで送信</button>
+<div id="img-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:9999;overflow-y:auto;">
+  <div style="padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="color:#fff;font-size:14px;font-weight:700;">&#x1F4F7; チェックシート画像</span>
+      <button onclick="closeModal()" style="background:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;">&#x2715; 閉じる</button>
+    </div>
+    <p style="color:#fbbf24;font-size:12px;margin-bottom:10px;">&#x1F447; 画像を長押し &#x2192;「写真に追加」で保存 &#x2192; Slackに添付</p>
+    <img id="preview-img" src="" style="width:100%;border-radius:8px;display:block;">
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button onclick="tryShareImg()" style="flex:1;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;">&#x1F4E4; 共有シートで送信</button>
+      <button onclick="closeModal()" style="flex:1;background:#475569;color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;">&#x2715; 閉じる</button>
+    </div>
   </div>
-  <div id="bar-row2">
-    <button id="btn-reset" onclick="doReset()">&#x21BA; リセット</button>
-    <button id="btn-print" onclick="window.print()">&#x1F5A8; 印刷・PDF</button>
+</div>
+<div id="print-bar">
+  <div style="display:flex;gap:8px;margin-bottom:6px;">
+    <button id="btn-share-img" onclick="shareAsPNG()" style="flex:1;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;padding:13px 8px;cursor:pointer;font-family:inherit;">&#x1F4F7; 画像で送信</button>
+    <button id="btn-share-txt" onclick="shareAsTXT()" style="flex:1;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;padding:13px 8px;cursor:pointer;font-family:inherit;">&#x1F4C4; テキストで送信</button>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button id="btn-reset" onclick="doReset()" style="flex:1;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:13px;padding:11px 8px;cursor:pointer;font-family:inherit;">&#x21BA; リセット</button>
+    <button id="btn-print" onclick="window.print()" style="flex:1;background:#475569;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:11px 8px;cursor:pointer;font-family:inherit;">&#x1F5A8; 印刷</button>
   </div>
 </div>
 
@@ -736,152 +736,6 @@ function doReset() {
 }
 
 
-
-// ===== SHARE FUNCTIONS =====
-var CAT_MAP = [
-  {name:"オフィス環境", from:1, to:15},
-  {name:"防災・安全", from:16, to:21},
-  {name:"受動喫煙対策", from:22, to:22},
-  {name:"安全衛生の取り組み", from:23, to:23},
-  {name:"緊急備品", from:24, to:25}
-];
-var ITEM_NAMES = ["","蛍光灯・室内照明","作業台の照度","換気・空調調節","温度・湿度管理",
-  "ワークステーション","通路幅","通路のつまづき・すべり","配線・電気用具","作業姿勢",
-  "室内表示物・看板","事務所内の書類整理","棚・ラック内の備品","廃棄物の処理・分別",
-  "トイレ・給湯室","冷蔵庫内の清潔さ","非常口のドア","消火器","家具・電化製品の固定",
-  "キャビネット上の落下防止","救急用具","防災備品","受動喫煙対策",
-  "安全衛生の取り組み","AED管理","洗眼器管理"];
-
-function buildSummary() {
-  var date = document.getElementById('f-date').value || '未入力';
-  var name = document.getElementById('f-name').value || '未入力';
-  var site = document.getElementById('f-site').value || 'DKJ4-DS';
-  var scoreEl = document.getElementById('score-val').textContent;
-  var pct = document.getElementById('score-pct').textContent;
-  var judge = document.getElementById('f-judge').value;
-  var SEP = '━━━━━━━━━━━━━━━\n';
-  var catLines = '';
-  for (var c=0; c<CAT_MAP.length; c++) {
-    var cat = CAT_MAP[c]; var catScore = 0;
-    var catMax = (cat.to - cat.from + 1) * 3;
-    for (var i=cat.from; i<=cat.to; i++) {
-      var r = document.querySelector('input[name="q'+i+'"]:checked');
-      if (r) catScore += parseInt(r.value);
-    }
-    catLines += '  \u2022 ' + cat.name + ': ' + catScore + '/' + catMax + '\n';
-  }
-  var issues = '';
-  for (var j=1; j<=TOTAL; j++) {
-    var r2 = document.querySelector('input[name="q'+j+'"]:checked');
-    if (r2 && parseInt(r2.value) <= 2) {
-      var ta = document.querySelector('textarea[name="comment'+j+'"]');
-      var ctext = (ta && ta.value) ? ' (' + ta.value + ')' : '';
-      issues += '  \u26a0 ' + ITEM_NAMES[j] + ctext + '\n';
-    }
-  }
-  var judgeEmoji = judge === '良好' ? '\u2705' : judge === '要改善' ? '\u26a0\ufe0f' : '\u274c';
-  var text = '\ud83c\udfe2 衛生管理者チェックシート 完了報告\n' + SEP
-    + '\ud83d\udcc5 実施日: ' + date + '\n'
-    + '\ud83d\udc64 実施者: ' + name + '\n'
-    + '\ud83c\udfe6 サイト: ' + site + '\n'
-    + '\ud83d\udcca スコア: ' + scoreEl + '/75 (' + pct + ') ' + judgeEmoji + ' ' + judge + '\n'
-    + SEP + '\ud83d\udccb カテゴリ別\n' + catLines;
-  if (issues) { text += SEP + '\u26a0\ufe0f 要確認項目\n' + issues; }
-  text += SEP;
-  return {text: text, date: date, name: name};
-}
-
-function checkAnswered() {
-  var scoreEl = document.getElementById('score-val').textContent;
-  if (scoreEl === '—') { alert('チェックシートに回答してから送信してください。'); return false; }
-  return true;
-}
-
-// ===== A: PNG画像で送信 =====
-function shareAsPNG() {
-  if (!checkAnswered()) return;
-  var btn = document.getElementById('btn-share-img');
-  btn.textContent = '生成中...';
-  btn.disabled = true;
-  document.getElementById('print-bar').style.display = 'none';
-  // scale:1 でメモリ節約（iOS対策）
-  html2canvas(document.body, {scale:1, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
-    .then(function(canvas) {
-      document.getElementById('print-bar').style.display = '';
-      // toDataURL方式（iOS SafariでtoBlob nullになる問題を回避）
-      var dataURL = canvas.toDataURL('image/png');
-      if (!dataURL || dataURL === 'data:,') {
-        btn.textContent = '\ud83d\udcf7 画像で送信';
-        btn.disabled = false;
-        alert('画像の生成に失敗しました。');
-        return;
-      }
-      // dataURL → Blob変換
-      var arr = dataURL.split(',');
-      var bstr = atob(arr[1]);
-      var u8arr = new Uint8Array(bstr.length);
-      for (var i=0; i<bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
-      var blob = new Blob([u8arr], {type:'image/png'});
-      var info = buildSummary();
-      var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
-      var shareData = {files:[file], text:info.text};
-      if (navigator.canShare && navigator.canShare(shareData)) {
-        navigator.share(shareData)
-          .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
-      } else {
-        // ファイル共有不可の場合→テキストのみ共有
-        alert('このブラウザは画像ファイルの共有に対応していません。\nテキストで送信ボタンをお使いください。');
-      }
-      btn.textContent = '\ud83d\udcf7 画像で送信';
-      btn.disabled = false;
-    })
-    .catch(function(e) {
-      document.getElementById('print-bar').style.display = '';
-      btn.textContent = '\ud83d\udcf7 画像で送信';
-      btn.disabled = false;
-      alert('画像生成エラー: ' + e.message);
-    });
-}
-
-// ===== B: テキストファイルで送信 =====
-function shareAsTXT() {
-  if (!checkAnswered()) return;
-  var info = buildSummary();
-  // Build detailed text with all items
-  var detail = info.text + '\n【全項目詳細】\n';
-  for (var i=1; i<=TOTAL; i++) {
-    var r = document.querySelector('input[name="q'+i+'"]:checked');
-    var score = r ? r.value : '未回答';
-    var ta = document.querySelector('textarea[name="comment'+i+'"]');
-    var comment = (ta && ta.value) ? ' / ' + ta.value : '';
-    detail += i + '. ' + ITEM_NAMES[i] + ': ' + score + '点' + comment + '\n';
-  }
-  var blob = new Blob([detail], {type:'text/plain;charset=utf-8'});
-  var file = new File([blob], 'eisei_checklist_' + info.date + '.txt', {type:'text/plain'});
-  var shareData = {files:[file], text:info.text};
-  if (navigator.canShare && navigator.canShare(shareData)) {
-    navigator.share(shareData)
-      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
-  } else if (navigator.share) {
-    navigator.share({text: info.text})
-      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
-  } else {
-    copyFallback(detail);
-  }
-}
-
-function copyFallback(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function() {
-      alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
-    });
-  } else {
-    var tmp = document.createElement('textarea');
-    tmp.value = text; document.body.appendChild(tmp); tmp.select();
-    document.execCommand('copy'); document.body.removeChild(tmp);
-    alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
-  }
-}
 </script>
 </body>
 </html>
