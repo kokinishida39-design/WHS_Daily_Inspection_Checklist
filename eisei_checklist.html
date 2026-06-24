@@ -35,10 +35,13 @@ body { margin:0; padding:0; font-family:"Hiragino Sans","Yu Gothic",sans-serif; 
 .comment-cell textarea { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:4px; padding:5px 8px; font-family:inherit; font-size:12px; resize:vertical; min-height:40px; color:#1e293b; }
 /* PRINT BAR */
 #print-bar { position:sticky; bottom:0; background:#fff; border-top:2px solid #cbd5e1; padding:10px 14px; display:table; width:100%; box-sizing:border-box; }
-#btn-print { display:inline-block; background:#475569; color:#fff; border:none; border-radius:7px; font-size:13px; font-weight:700; padding:13px 10px; cursor:pointer; font-family:inherit; width:80px; vertical-align:top; }
-#btn-share { display:inline-block; background:#16a34a; color:#fff; border:none; border-radius:7px; font-size:14px; font-weight:700; padding:13px 10px; cursor:pointer; font-family:inherit; flex:1; margin:0 6px; vertical-align:top; }
-#btn-reset { display:inline-block; background:#f1f5f9; color:#64748b; border:none; border-radius:7px; font-size:12px; padding:13px 10px; cursor:pointer; font-family:inherit; width:60px; margin-right:0; vertical-align:top; }
-#print-bar { display:flex; gap:6px; align-items:stretch; }
+#print-bar { background:#fff; padding:10px 12px; border-top:2px solid #cbd5e1; position:sticky; bottom:0; }
+#bar-row1 { display:flex; gap:8px; margin-bottom:6px; }
+#bar-row2 { display:flex; gap:8px; }
+.btn-share-img { flex:1; background:#16a34a; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; padding:13px 8px; cursor:pointer; font-family:inherit; }
+.btn-share-txt { flex:1; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:700; padding:13px 8px; cursor:pointer; font-family:inherit; }
+#btn-reset { flex:1; background:#f1f5f9; color:#64748b; border:none; border-radius:8px; font-size:13px; padding:11px 8px; cursor:pointer; font-family:inherit; }
+#btn-print { flex:1; background:#475569; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; padding:11px 8px; cursor:pointer; font-family:inherit; }
 @media print {
   body { background:#fff; font-size:11px; }
   #print-bar { display:none; }
@@ -49,6 +52,140 @@ body { margin:0; padding:0; font-family:"Hiragino Sans","Yu Gothic",sans-serif; 
   .opt.active-1, .opt.active-2, .opt.active-3 { display:block; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js">
+// ===== SHARE FUNCTIONS =====
+var CAT_MAP = [
+  {name:"オフィス環境", from:1, to:15},
+  {name:"防災・安全", from:16, to:21},
+  {name:"受動喫煙対策", from:22, to:22},
+  {name:"安全衛生の取り組み", from:23, to:23},
+  {name:"緊急備品", from:24, to:25}
+];
+var ITEM_NAMES = ["","蛍光灯・室内照明","作業台の照度","換気・空調調節","温度・湿度管理",
+  "ワークステーション","通路幅","通路のつまづき・すべり","配線・電気用具","作業姿勢",
+  "室内表示物・看板","事務所内の書類整理","棚・ラック内の備品","廃棄物の処理・分別",
+  "トイレ・給湯室","冷蔵庫内の清潔さ","非常口のドア","消火器","家具・電化製品の固定",
+  "キャビネット上の落下防止","救急用具","防災備品","受動喫煙対策",
+  "安全衛生の取り組み","AED管理","洗眼器管理"];
+
+function buildSummary() {
+  var date = document.getElementById('f-date').value || '未入力';
+  var name = document.getElementById('f-name').value || '未入力';
+  var site = document.getElementById('f-site').value || 'DKJ4-DS';
+  var scoreEl = document.getElementById('score-val').textContent;
+  var pct = document.getElementById('score-pct').textContent;
+  var judge = document.getElementById('f-judge').value;
+  var SEP = '━━━━━━━━━━━━━━━\n';
+  var catLines = '';
+  for (var c=0; c<CAT_MAP.length; c++) {
+    var cat = CAT_MAP[c]; var catScore = 0;
+    var catMax = (cat.to - cat.from + 1) * 3;
+    for (var i=cat.from; i<=cat.to; i++) {
+      var r = document.querySelector('input[name="q'+i+'"]:checked');
+      if (r) catScore += parseInt(r.value);
+    }
+    catLines += '  \u2022 ' + cat.name + ': ' + catScore + '/' + catMax + '\n';
+  }
+  var issues = '';
+  for (var j=1; j<=TOTAL; j++) {
+    var r2 = document.querySelector('input[name="q'+j+'"]:checked');
+    if (r2 && parseInt(r2.value) <= 2) {
+      var ta = document.querySelector('textarea[name="comment'+j+'"]');
+      var ctext = (ta && ta.value) ? ' (' + ta.value + ')' : '';
+      issues += '  \u26a0 ' + ITEM_NAMES[j] + ctext + '\n';
+    }
+  }
+  var judgeEmoji = judge === '良好' ? '\u2705' : judge === '要改善' ? '\u26a0\ufe0f' : '\u274c';
+  var text = '\ud83c\udfe2 衛生管理者チェックシート 完了報告\n' + SEP
+    + '\ud83d\udcc5 実施日: ' + date + '\n'
+    + '\ud83d\udc64 実施者: ' + name + '\n'
+    + '\ud83c\udfe6 サイト: ' + site + '\n'
+    + '\ud83d\udcca スコア: ' + scoreEl + '/75 (' + pct + ') ' + judgeEmoji + ' ' + judge + '\n'
+    + SEP + '\ud83d\udccb カテゴリ別\n' + catLines;
+  if (issues) { text += SEP + '\u26a0\ufe0f 要確認項目\n' + issues; }
+  text += SEP;
+  return {text: text, date: date, name: name};
+}
+
+function checkAnswered() {
+  var scoreEl = document.getElementById('score-val').textContent;
+  if (scoreEl === '—') { alert('チェックシートに回答してから送信してください。'); return false; }
+  return true;
+}
+
+// ===== A: PNG画像で送信 =====
+function shareAsPNG() {
+  if (!checkAnswered()) return;
+  var btn = document.getElementById('btn-share-img');
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+  // Hide print-bar during capture
+  document.getElementById('print-bar').style.display = 'none';
+  html2canvas(document.body, {scale:1.5, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
+    .then(function(canvas) {
+      document.getElementById('print-bar').style.display = '';
+      canvas.toBlob(function(blob) {
+        var info = buildSummary();
+        var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
+        var shareData = {files:[file], text:info.text};
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          navigator.share(shareData)
+            .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
+        } else {
+          alert('\u30d5\u30a1\u30a4\u30eb\u5171\u6709\u306f\u3053\u306e\u30d6\u30e9\u30a6\u30b6\u3067\u306f\u5229\u7528\u3067\u304d\u307e\u305b\u3093\u3002\niOS Safari\uff08HTTPS\uff09\u3067\u30a2\u30af\u30bb\u30b9\u3057\u3066\u304f\u3060\u3055\u3044\u3002');
+        }
+        btn.textContent = '\ud83d\udcf7 画像で送信';
+        btn.disabled = false;
+      }, 'image/png');
+    })
+    .catch(function(e) {
+      document.getElementById('print-bar').style.display = '';
+      btn.textContent = '\ud83d\udcf7 画像で送信';
+      btn.disabled = false;
+      alert('画像生成エラー: ' + e.message);
+    });
+}
+
+// ===== B: テキストファイルで送信 =====
+function shareAsTXT() {
+  if (!checkAnswered()) return;
+  var info = buildSummary();
+  // Build detailed text with all items
+  var detail = info.text + '\n【全項目詳細】\n';
+  for (var i=1; i<=TOTAL; i++) {
+    var r = document.querySelector('input[name="q'+i+'"]:checked');
+    var score = r ? r.value : '未回答';
+    var ta = document.querySelector('textarea[name="comment'+i+'"]');
+    var comment = (ta && ta.value) ? ' / ' + ta.value : '';
+    detail += i + '. ' + ITEM_NAMES[i] + ': ' + score + '点' + comment + '\n';
+  }
+  var blob = new Blob([detail], {type:'text/plain;charset=utf-8'});
+  var file = new File([blob], 'eisei_checklist_' + info.date + '.txt', {type:'text/plain'});
+  var shareData = {files:[file], text:info.text};
+  if (navigator.canShare && navigator.canShare(shareData)) {
+    navigator.share(shareData)
+      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
+  } else if (navigator.share) {
+    navigator.share({text: info.text})
+      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
+  } else {
+    copyFallback(detail);
+  }
+}
+
+function copyFallback(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() {
+      alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
+    });
+  } else {
+    var tmp = document.createElement('textarea');
+    tmp.value = text; document.body.appendChild(tmp); tmp.select();
+    document.execCommand('copy'); document.body.removeChild(tmp);
+    alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
+  }
+}
+</script>
 </head>
 <body>
 
@@ -525,9 +662,14 @@ body { margin:0; padding:0; font-family:"Hiragino Sans","Yu Gothic",sans-serif; 
 
 
 <div id="print-bar">
-  <button id="btn-reset" onclick="doReset()">&#x21BA;<br>リセット</button>
-  <button id="btn-share" onclick="doShare()">&#x1F4E4; 完了・送信</button>
-  <button id="btn-print" onclick="window.print()">&#x1F5A8; 印刷</button>
+  <div id="bar-row1">
+    <button class="btn-share-img" id="btn-share-img" onclick="shareAsPNG()">&#x1F4F7; 画像で送信</button>
+    <button class="btn-share-txt" id="btn-share-txt" onclick="shareAsTXT()">&#x1F4C4; テキストで送信</button>
+  </div>
+  <div id="bar-row2">
+    <button id="btn-reset" onclick="doReset()">&#x21BA; リセット</button>
+    <button id="btn-print" onclick="window.print()">&#x1F5A8; 印刷・PDF</button>
+  </div>
 </div>
 
 <script>
@@ -581,7 +723,8 @@ function doReset() {
 }
 
 
-// ===== SHARE FUNCTION =====
+
+// ===== SHARE FUNCTIONS =====
 var CAT_MAP = [
   {name:"オフィス環境", from:1, to:15},
   {name:"防災・安全", from:16, to:21},
@@ -596,75 +739,121 @@ var ITEM_NAMES = ["","蛍光灯・室内照明","作業台の照度","換気・�
   "キャビネット上の落下防止","救急用具","防災備品","受動喫煙対策",
   "安全衛生の取り組み","AED管理","洗眼器管理"];
 
-function doShare() {
+function buildSummary() {
   var date = document.getElementById('f-date').value || '未入力';
   var name = document.getElementById('f-name').value || '未入力';
   var site = document.getElementById('f-site').value || 'DKJ4-DS';
   var scoreEl = document.getElementById('score-val').textContent;
   var pct = document.getElementById('score-pct').textContent;
   var judge = document.getElementById('f-judge').value;
-  if (scoreEl === '—') { alert('チェックシートに回答してから送信してください。'); return; }
-
+  var SEP = '━━━━━━━━━━━━━━━\n';
   var catLines = '';
   for (var c=0; c<CAT_MAP.length; c++) {
-    var cat = CAT_MAP[c];
-    var catScore = 0;
+    var cat = CAT_MAP[c]; var catScore = 0;
     var catMax = (cat.to - cat.from + 1) * 3;
     for (var i=cat.from; i<=cat.to; i++) {
       var r = document.querySelector('input[name="q'+i+'"]:checked');
       if (r) catScore += parseInt(r.value);
     }
-    catLines += '\u3000\u2022 ' + cat.name + '\uff1a' + catScore + '/' + catMax + '\n';
+    catLines += '  \u2022 ' + cat.name + ': ' + catScore + '/' + catMax + '\n';
   }
-
   var issues = '';
   for (var j=1; j<=TOTAL; j++) {
     var r2 = document.querySelector('input[name="q'+j+'"]:checked');
     if (r2 && parseInt(r2.value) <= 2) {
       var ta = document.querySelector('textarea[name="comment'+j+'"]');
-      var ctext = (ta && ta.value) ? '\uff08' + ta.value + '\uff09' : '';
-      issues += '\u3000\u26a0 ' + ITEM_NAMES[j] + ctext + '\n';
+      var ctext = (ta && ta.value) ? ' (' + ta.value + ')' : '';
+      issues += '  \u26a0 ' + ITEM_NAMES[j] + ctext + '\n';
     }
   }
-
   var judgeEmoji = judge === '良好' ? '\u2705' : judge === '要改善' ? '\u26a0\ufe0f' : '\u274c';
-  var SEP = '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n';
-
-  var text = '\ud83c\udfe2 衛生管理者チェックシート 完了報告\n'
-    + SEP
-    + '\ud83d\udcc5 実施日\uff1a' + date + '\n'
-    + '\ud83d\udc64 実施者\uff1a' + name + '\n'
-    + '\ud83c\udfe6 サイト\uff1a' + site + '\n'
-    + '\ud83d\udcca スコア\uff1a' + scoreEl + ' / 75点\uff08' + pct + '\uff09 ' + judgeEmoji + ' ' + judge + '\n'
-    + SEP
-    + '\ud83d\udccb カテゴリ別\n' + catLines;
-
-  if (issues) {
-    text += SEP + '\u26a0\ufe0f 要確認項目\n' + issues;
-  }
+  var text = '\ud83c\udfe2 衛生管理者チェックシート 完了報告\n' + SEP
+    + '\ud83d\udcc5 実施日: ' + date + '\n'
+    + '\ud83d\udc64 実施者: ' + name + '\n'
+    + '\ud83c\udfe6 サイト: ' + site + '\n'
+    + '\ud83d\udcca スコア: ' + scoreEl + '/75 (' + pct + ') ' + judgeEmoji + ' ' + judge + '\n'
+    + SEP + '\ud83d\udccb カテゴリ別\n' + catLines;
+  if (issues) { text += SEP + '\u26a0\ufe0f 要確認項目\n' + issues; }
   text += SEP;
+  return {text: text, date: date, name: name};
+}
 
-  if (navigator.share) {
-    navigator.share({ title: '衛生管理者チェックシート 完了報告', text: text })
-      .catch(function(e) { if (e.name !== 'AbortError') { copyFallback(text); } });
+function checkAnswered() {
+  var scoreEl = document.getElementById('score-val').textContent;
+  if (scoreEl === '—') { alert('チェックシートに回答してから送信してください。'); return false; }
+  return true;
+}
+
+// ===== A: PNG画像で送信 =====
+function shareAsPNG() {
+  if (!checkAnswered()) return;
+  var btn = document.getElementById('btn-share-img');
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+  // Hide print-bar during capture
+  document.getElementById('print-bar').style.display = 'none';
+  html2canvas(document.body, {scale:1.5, useCORS:true, logging:false, backgroundColor:'#f0f4f8'})
+    .then(function(canvas) {
+      document.getElementById('print-bar').style.display = '';
+      canvas.toBlob(function(blob) {
+        var info = buildSummary();
+        var file = new File([blob], 'eisei_checklist_' + info.date + '.png', {type:'image/png'});
+        var shareData = {files:[file], text:info.text};
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          navigator.share(shareData)
+            .catch(function(e) { if (e.name !== 'AbortError') alert('共有エラー: ' + e.message); });
+        } else {
+          alert('\u30d5\u30a1\u30a4\u30eb\u5171\u6709\u306f\u3053\u306e\u30d6\u30e9\u30a6\u30b6\u3067\u306f\u5229\u7528\u3067\u304d\u307e\u305b\u3093\u3002\niOS Safari\uff08HTTPS\uff09\u3067\u30a2\u30af\u30bb\u30b9\u3057\u3066\u304f\u3060\u3055\u3044\u3002');
+        }
+        btn.textContent = '\ud83d\udcf7 画像で送信';
+        btn.disabled = false;
+      }, 'image/png');
+    })
+    .catch(function(e) {
+      document.getElementById('print-bar').style.display = '';
+      btn.textContent = '\ud83d\udcf7 画像で送信';
+      btn.disabled = false;
+      alert('画像生成エラー: ' + e.message);
+    });
+}
+
+// ===== B: テキストファイルで送信 =====
+function shareAsTXT() {
+  if (!checkAnswered()) return;
+  var info = buildSummary();
+  // Build detailed text with all items
+  var detail = info.text + '\n【全項目詳細】\n';
+  for (var i=1; i<=TOTAL; i++) {
+    var r = document.querySelector('input[name="q'+i+'"]:checked');
+    var score = r ? r.value : '未回答';
+    var ta = document.querySelector('textarea[name="comment'+i+'"]');
+    var comment = (ta && ta.value) ? ' / ' + ta.value : '';
+    detail += i + '. ' + ITEM_NAMES[i] + ': ' + score + '点' + comment + '\n';
+  }
+  var blob = new Blob([detail], {type:'text/plain;charset=utf-8'});
+  var file = new File([blob], 'eisei_checklist_' + info.date + '.txt', {type:'text/plain'});
+  var shareData = {files:[file], text:info.text};
+  if (navigator.canShare && navigator.canShare(shareData)) {
+    navigator.share(shareData)
+      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
+  } else if (navigator.share) {
+    navigator.share({text: info.text})
+      .catch(function(e) { if (e.name !== 'AbortError') copyFallback(detail); });
   } else {
-    copyFallback(text);
+    copyFallback(detail);
   }
 }
 
 function copyFallback(text) {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(function() {
-      alert('クリップボードにコピーしました！\nSlackに貼り付けてください。');
+      alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
     });
   } else {
     var tmp = document.createElement('textarea');
-    tmp.value = text;
-    document.body.appendChild(tmp);
-    tmp.select();
-    document.execCommand('copy');
-    document.body.removeChild(tmp);
-    alert('クリップボードにコピーしました！\nSlackに貼り付けてください。');
+    tmp.value = text; document.body.appendChild(tmp); tmp.select();
+    document.execCommand('copy'); document.body.removeChild(tmp);
+    alert('\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01\nSlack\u306b\u8cbc\u308a\u4ed8\u3051\u3066\u304f\u3060\u3055\u3044\u3002');
   }
 }
 </script>
