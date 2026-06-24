@@ -207,7 +207,7 @@ function buildSummary() {
   var scoreEl = document.getElementById('score-val').textContent;
   var pct = document.getElementById('score-pct').textContent;
   var judge = document.getElementById('f-judge').value;
-  var SEP = '━━━━━━━━━━━━━━━\n';
+  var SEP = '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n';
   var catLines = '';
   for (var c=0; c<CAT_MAP.length; c++) {
     var cat=CAT_MAP[c]; var cs=0; var cm=(cat.to-cat.from+1)*3;
@@ -215,22 +215,24 @@ function buildSummary() {
       var r=document.querySelector('input[name="q'+i+'"]:checked');
       if(r) cs+=parseInt(r.value);
     }
-    catLines += '  * '+cat.name+': '+cs+'/'+cm+'\n';
+    catLines += '\u3000\u30fb '+cat.name+'\uff1a'+cs+'/'+cm+'\n';
   }
   var issues='';
   for (var j=1; j<=TOTAL; j++) {
     var r2=document.querySelector('input[name="q'+j+'"]:checked');
     if(r2 && parseInt(r2.value)<=2) {
       var ta=document.querySelector('textarea[name="comment'+j+'"]');
-      issues += '  ! '+INAMES[j]+(ta&&ta.value?' ('+ta.value+')':'')+'\n';
+      issues += '\u3000\u26a0 '+INAMES[j]+(ta&&ta.value?'\uff08'+ta.value+'\uff09':'')+'\n';
     }
   }
-  var je=judge==='良好'?'[OK]':judge==='要改善'?'[!]':'[NG]';
-  var text='[衛生管理者チェックシート 完了報告]\n'+SEP
-    +'日付: '+date+'\n実施者: '+name+'\nサイト: '+site
-    +'\nスコア: '+scoreEl+'/75 ('+pct+') '+je+' '+judge+'\n'
-    +SEP+'カテゴリ別\n'+catLines;
-  if(issues) text+=SEP+'要確認項目\n'+issues;
+  var je = judge==='\u826f\u597d'?'\u2705':judge==='\u8981\u6539\u5584'?'\u26a0\ufe0f':'\u274c';
+  var text='\ud83c\udfe2 \u885b\u751f\u7ba1\u7406\u8005\u30c1\u30a7\u30c3\u30af\u30b7\u30fc\u30c8\u3000\u5b8c\u4e86\u5831\u544a\n'+SEP
+    +'\ud83d\udcc5 \u5b9f\u65bd\u65e5\uff1a'+date+'\n'
+    +'\ud83d\udc64 \u5b9f\u65bd\u8005\uff1a'+name+'\n'
+    +'\ud83c\udfe6 \u30b5\u30a4\u30c8\uff1a'+site+'\n'
+    +'\ud83d\udcca \u30b9\u30b3\u30a2\uff1a'+scoreEl+'/ 75\u70b9\uff08'+pct+'\uff09 '+je+' '+judge+'\n'
+    +SEP+'\ud83d\udccb \u30ab\u30c6\u30b4\u30ea\u5225\n'+catLines;
+  if(issues) text+=SEP+'\u26a0\ufe0f \u8981\u78ba\u8a8d\u9805\u76ee\n'+issues;
   text+=SEP;
   return {text:text, date:date};
 }
@@ -894,7 +896,7 @@ function buildSummary() {
   var scoreEl = document.getElementById('score-val').textContent;
   var pct = document.getElementById('score-pct').textContent;
   var judge = document.getElementById('f-judge').value;
-  var SEP = '━━━━━━━━━━━━━━━\n';
+  var SEP = '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n';
   var catLines = '';
   for (var c=0; c<CAT_MAP.length; c++) {
     var cat=CAT_MAP[c]; var cs=0; var cm=(cat.to-cat.from+1)*3;
@@ -902,22 +904,24 @@ function buildSummary() {
       var r=document.querySelector('input[name="q'+i+'"]:checked');
       if(r) cs+=parseInt(r.value);
     }
-    catLines += '  * '+cat.name+': '+cs+'/'+cm+'\n';
+    catLines += '\u3000\u30fb '+cat.name+'\uff1a'+cs+'/'+cm+'\n';
   }
   var issues='';
   for (var j=1; j<=TOTAL; j++) {
     var r2=document.querySelector('input[name="q'+j+'"]:checked');
     if(r2 && parseInt(r2.value)<=2) {
       var ta=document.querySelector('textarea[name="comment'+j+'"]');
-      issues += '  ! '+INAMES[j]+(ta&&ta.value?' ('+ta.value+')':'')+'\n';
+      issues += '\u3000\u26a0 '+INAMES[j]+(ta&&ta.value?'\uff08'+ta.value+'\uff09':'')+'\n';
     }
   }
-  var je=judge==='良好'?'[OK]':judge==='要改善'?'[!]':'[NG]';
-  var text='[衛生管理者チェックシート 完了報告]\n'+SEP
-    +'日付: '+date+'\n実施者: '+name+'\nサイト: '+site
-    +'\nスコア: '+scoreEl+'/75 ('+pct+') '+je+' '+judge+'\n'
-    +SEP+'カテゴリ別\n'+catLines;
-  if(issues) text+=SEP+'要確認項目\n'+issues;
+  var je = judge==='\u826f\u597d'?'\u2705':judge==='\u8981\u6539\u5584'?'\u26a0\ufe0f':'\u274c';
+  var text='\ud83c\udfe2 \u885b\u751f\u7ba1\u7406\u8005\u30c1\u30a7\u30c3\u30af\u30b7\u30fc\u30c8\u3000\u5b8c\u4e86\u5831\u544a\n'+SEP
+    +'\ud83d\udcc5 \u5b9f\u65bd\u65e5\uff1a'+date+'\n'
+    +'\ud83d\udc64 \u5b9f\u65bd\u8005\uff1a'+name+'\n'
+    +'\ud83c\udfe6 \u30b5\u30a4\u30c8\uff1a'+site+'\n'
+    +'\ud83d\udcca \u30b9\u30b3\u30a2\uff1a'+scoreEl+'/ 75\u70b9\uff08'+pct+'\uff09 '+je+' '+judge+'\n'
+    +SEP+'\ud83d\udccb \u30ab\u30c6\u30b4\u30ea\u5225\n'+catLines;
+  if(issues) text+=SEP+'\u26a0\ufe0f \u8981\u78ba\u8a8d\u9805\u76ee\n'+issues;
   text+=SEP;
   return {text:text, date:date};
 }
